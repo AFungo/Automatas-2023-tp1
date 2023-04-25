@@ -11,10 +11,17 @@ struct{
 	booleanArray delta[MAX_STATES][MAX_STATES];
 	int initialState;
 	int finalStates[MAX_STATES];
-}automaton;
+}AFN;
+
 
 
 
 int main (int argc, char *argv[]){
 	
 }
+
+
+//bool pertence(AFN a, int[] chain);
+//void entrada(String fileName);
+//void salida(String fileName);        
+//AFD AFNtoAFD(AFN afn)
