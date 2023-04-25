@@ -8,7 +8,9 @@ typedef struct{
 	int delta[MAX_STATES][MAX_STATES][ALPHABET];
 	int initialState;
 	int finalStates[MAX_STATES];
-}automaton;
+}AFN;
 
-
-
+bool pertence(AFN a, int[] chain);
+void entrada(String fileName);
+void salida(String fileName);        
+AFD AFNtoAFD(AFN afn)
