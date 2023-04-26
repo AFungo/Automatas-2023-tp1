@@ -5,12 +5,12 @@
 
 #define MAX_STATES 10
 #define ALPHABET_SIZE 2
-typedef bool booleanArray[ALPHABET_SIZE];
+typedef bool booleanArray[MAX_STATES];
 
 struct AFN{
 	int states[MAX_STATES];
 	int alphabet[ALPHABET_SIZE];
-	booleanArray delta[MAX_STATES][MAX_STATES];
+	booleanArray delta[MAX_STATES][ALPHABET_SIZE];
 	int initialState;
 	int finalStates[MAX_STATES];
 };
@@ -22,10 +22,10 @@ int main (int argc, char *argv[]){
 	int states[3] = {1,2,3};
 	int alph[2] = {0,1};
 	int finalSt[1] = {3};
-	booleanArray delta[3][3] = { //      1             2            3
-							/*1*/	{{true,false},{true,true},{false,false}},
-							/*2*/	{{false,false},{false,true},{true,true}},
-							/*3*/	{{false,true},{false,false},{true,true}}
+	booleanArray delta[3][3] = { //       0           		1           
+							/*1*/	{{true,false,false},{true,true,true},},
+							/*2*/	{{false,false,false},{false,true,false},},
+							/*3*/	{{false,true,true},{false,false,true},}
 								}; 
 
 	memcpy(a->states, states, sizeof(int)*3);
