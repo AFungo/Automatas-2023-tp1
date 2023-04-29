@@ -4,6 +4,7 @@
 #include <string.h>
 
 #define MAX_STATES 10
+#define FINAL_STATES 1
 #define ALPHABET_SIZE 2
 typedef bool booleanArray[MAX_STATES];
 
@@ -12,7 +13,7 @@ struct AFN{
 	int alphabet[ALPHABET_SIZE];
 	booleanArray delta[MAX_STATES][ALPHABET_SIZE];
 	int initialState;
-	int finalStates[MAX_STATES];
+	int finalStates[FINAL_STATES];
 };
 
 bool pertenceAlph(int alph[], char *chain){
@@ -34,12 +35,41 @@ bool pertenceAlph(int alph[], char *chain){
 	}
 	return a;
 }
+
+//in "1001011"
+//out true or false depends of the AFN
 bool pertence(struct AFN t, char *chain){
 	bool pA= pertenceAlph(t.alphabet,chain);
 	if (pA){
-		printf("pertenece");
+		int actualState=t.initialState;
+		int i=0;
+		bool unlock=true;
+		while (i<strlen(chain)&&unlock){
+			int k=0;
+			while (k<MAX_STATES){
+				printf("%d",(t.delta[actualState][chain[i]])[k]);
+				if ((t.delta[actualState][chain[i]])[k]){
+					actualState=k;
+					k=MAX_STATES;
+				} else {
+					k++;
+					if(k>=MAX_STATES){
+						unlock=false;
+					}
+				}
+			}
+			i++;
+		}
+		if(unlock){
+			for (int i=0;i<FINAL_STATES;i++){
+				if(actualState=t.finalStates[i]){
+					return true;
+				}
+			}
+		}
+		return false;		
 	} else {
-		printf("no pertenece");
+		return false;
 	}
 }
 
