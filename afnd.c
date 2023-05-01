@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define MAX_STATES 10
+#define MAX_STATES 3
 #define FINAL_STATES 1
 #define ALPHABET_SIZE 2
 typedef bool booleanArray[MAX_STATES];
@@ -38,17 +38,19 @@ bool pertenceAlph(int alph[], char *chain){
 
 //in "1001011"
 //out true or false depends of the AFN
-bool pertence(struct AFN t, char *chain){
-	bool pA= pertenceAlph(t.alphabet,chain);
+bool pertence(struct AFN *t, char *chain){
+	bool pA= pertenceAlph(t->alphabet,chain);
 	if (pA){
-		int actualState=t.initialState;
+		printf("initial state: %d \n",t->initialState);
+		int actualState=t->initialState;
 		int i=0;
 		bool unlock=true;
 		while (i<strlen(chain)&&unlock){
 			int k=0;
 			while (k<MAX_STATES){
-				printf("%d",(t.delta[actualState][chain[i]])[k]);
-				if ((t.delta[actualState][chain[i]])[k]){
+				printf("as= %d, i= %d, k= %d ",actualState,i,k);
+				printf("valor: %d \n",((t->delta[chain[i]][actualState-1])[k]));
+				if ((t->delta[chain[i]][actualState-1])[k]){
 					actualState=k;
 					k=MAX_STATES;
 				} else {
@@ -62,7 +64,7 @@ bool pertence(struct AFN t, char *chain){
 		}
 		if(unlock){
 			for (int i=0;i<FINAL_STATES;i++){
-				if(actualState=t.finalStates[i]){
+				if(actualState=t->finalStates[i]){
 					return true;
 				}
 			}
@@ -76,23 +78,25 @@ bool pertence(struct AFN t, char *chain){
 int main (int argc, char *argv[]){
 
 	struct AFN *a = malloc(sizeof(struct AFN));
-	int states[3] = {1,2,3};
-	int alph[2] = {0,1};
-	int finalSt[1] = {3};
+	int states[] = {1,2,3};
+	int alph[] = {0,1};
+	int finalSt[] = {3};
 	booleanArray delta[3][3] = { //       0           		1           
-							/*1*/	{{true,false,false},{true,true,true},},
-							/*2*/	{{false,false,false},{false,true,false},},
-							/*3*/	{{false,true,true},{false,false,true},}
+							/*1*/	{{true,false,false},{true,true,true}},
+							/*2*/	{{false,false,false},{false,true,false}},
+							/*3*/	{{false,true,true},{false,false,true}}
 								}; 
-
-	memcpy(a->states, states, sizeof(int)*3);
-	memcpy(a->alphabet, alph, sizeof(int)*2);
+	//printf("states %ld \n",sizeof(a->states)/sizeof(a->states[0]));
+	memcpy(a->states, states, sizeof(int)*MAX_STATES);
+	memcpy(a->alphabet, alph, sizeof(int)*ALPHABET_SIZE);
+	memcpy(a->finalStates, finalSt, sizeof(int)*MAX_STATES);
+	memcpy(a->delta, delta, sizeof(int)*MAX_STATES*ALPHABET_SIZE);
 	a->initialState = 1;
-	memcpy(a->finalStates, finalSt, sizeof(int)*1);
-	memcpy(a->delta, delta, sizeof(int)*3*3);
-	//printf("%d \n",a->initialState);
 	char string[] = "100101";
-	bool e=pertence(*a,string);
+	printf("valorr: %d \n",(a->delta[string[0]][0][0]));
+	printf("%d\n" , a->initialState);
+
+	bool e=pertence(a,string);
 	
 	//printf("%d",e);
 }
