@@ -25,7 +25,7 @@ bool pertenceAlph(int alph[], char *chain){
 		a=false;
 		k=0;
 		while (k<ALPHABET_SIZE && !a){
-			itoa(alph[k],ascii,10);
+			sprintf(ascii, "%d", alph[k]);
 			if(chain[i]==(int)ascii[0]){
 				a=true;
 			}
