@@ -48,9 +48,9 @@ bool pertence(struct AFN *t, char *chain){
 		while (i<strlen(chain)&&unlock){
 			int k=0;
 			while (k<MAX_STATES){
-				printf("as= %d, i= %d, k= %d ",actualState,i,k);
-				printf("valor: %d \n",((t->delta[chain[i]][actualState-1])[k]));
-				if ((t->delta[chain[i]][actualState-1])[k]){
+				printf("as= %d, chain i= %d, k= %d ",actualState,chain[i]-48,k);
+				printf("valor: %d \n",(t->delta[actualState-1][chain[i]-48][k]));
+				if ((t->delta[actualState-1][chain[i]-48][k])){
 					actualState=k;
 					k=MAX_STATES;
 				} else {
@@ -93,8 +93,8 @@ int main (int argc, char *argv[]){
 	memcpy(a->delta, delta, sizeof(int)*MAX_STATES*ALPHABET_SIZE);
 	a->initialState = 1;
 	char string[] = "100101";
-	printf("valorr: %d \n",(a->delta[string[0]][0][0]));
-	printf("%d\n" , a->initialState);
+	//printf("valorr: %d \n",(a->delta[string[0]][0][0]));
+	//printf("%d\n" , a->initialState);
 
 	bool e=pertence(a,string);
 	
