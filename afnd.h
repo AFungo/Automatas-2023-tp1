@@ -17,5 +17,6 @@ AFN readAutomaton(char *fileName);
 void automatonToString(AFN automaton);
 AFN initAutomaton(AFN automaton);
 void writeAutomaton(char *fileName, AFN automaton);
-
+bool pertenceAlph(int alph[], char *chain);
+bool pertence(AFN *t, char *chain);
 #endif

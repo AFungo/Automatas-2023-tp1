@@ -7,6 +7,63 @@
 #include "afnd.h"
 
 
+bool pertenceAlph(int alph[], char *chain){
+	int i=0;
+	bool a=true;
+	int k;
+	char ascii[2];
+	while (i < strlen(chain) && a){
+		a=false;
+		k=0;
+		while (k<ALPHABET_SIZE && !a){
+			sprintf(ascii, "%d", alph[k]);
+			if(chain[i]==(int)ascii[0]){
+				a=true;
+			}
+		k++;
+		}
+	i++;		
+	}
+	return a;
+}
+
+bool pertence(AFN *t, char *chain){
+	bool pA= pertenceAlph(t->alphabet,chain);
+	if (pA){
+		printf("initial state: %d \n",t->initialState);
+		int actualState=t->initialState;
+		int i=0;
+		bool unlock=true;
+		while (i<strlen(chain)&&unlock){
+			int k=0;
+			while (k<MAX_STATES){
+				printf("as= %d, chain i= %d, k= %d ",actualState,chain[i]-48,k);
+				printf("valor: %d \n",(t->delta[actualState-1][chain[i]-48][k]));
+				if ((t->delta[actualState-1][chain[i]-48][k])){
+					actualState=k;
+					k=MAX_STATES;
+				} else {
+					k++;
+					if(k>=MAX_STATES){
+						unlock=false;
+					}
+				}
+			}
+			i++;
+		}
+		if(unlock){
+			for (int i=0;i<MAX_STATES;i++){
+				if(actualState=t->finalStates[i]){
+					return true;
+				}
+			}
+		}
+		return false;		
+	} else {
+		return false;
+	}
+}
+
 AFN initAutomaton(AFN automaton){
 	
 	for(int i = 0; i < MAX_STATES; i++){
