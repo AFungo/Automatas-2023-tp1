@@ -37,7 +37,6 @@ bool pertence(AFN *t, char *chain){
 		int i=0;
 		bool unlock=true;
 		int cantStates=sizeof(t->states)/sizeof(t->states[0]);
-		//printf("\ninit = %d - Trans = %d \n", actualState, (int)chain[i]-48);
 		while (i<strlen(chain)&&unlock){
 			k=0;
 			while (k<cantStates){
@@ -51,13 +50,11 @@ bool pertence(AFN *t, char *chain){
 					}
 				}
 			}
-			//printf("\nK = %d - Trans = %d \n", actualState, (int)chain[i]-48);
 			i++;
 		}
-		//printf("\nfinal = %d - Trans = %d \n", actualState, (int)chain[i]-48);
 		if(unlock){
 			for (int i=0;i<MAX_STATES;i++){
-				if(actualState==i && t->finalStates[i]==1){
+				if(actualState==i && t->finalStates[i]==true){
 					return true;
 				}
 			}
