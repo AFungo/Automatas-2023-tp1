@@ -26,25 +26,26 @@ bool pertenceAlph(int alph[], char *chain){
 	}
 	return a;
 }
-
+//precondition: MAXSTATES and ALPHABETSIZE has to be correct.
 bool pertence(AFN *t, char *chain){
 	bool pA= pertenceAlph(t->alphabet,chain);
+	int ascii[2];
+	int ichain;
+	int k;
 	if (pA){
-		printf("initial state: %d \n",t->initialState);
 		int actualState=t->initialState;
 		int i=0;
 		bool unlock=true;
+		int cantStates=sizeof(t->states)/sizeof(t->states[0]);
 		while (i<strlen(chain)&&unlock){
-			int k=0;
-			while (k<MAX_STATES){
-				printf("as= %d, chain i= %d, k= %d ",actualState,chain[i]-48,k);
-				printf("valor: %d \n",(t->delta[actualState-1][chain[i]-48][k]));
-				if ((t->delta[actualState-1][chain[i]-48][k])){
+			k=0;
+			while (k<cantStates){
+				if ((t->delta[actualState][(int)chain[i]-48][k])){
 					actualState=k;
-					k=MAX_STATES;
+					k=cantStates;
 				} else {
 					k++;
-					if(k>=MAX_STATES){
+					if(k>=cantStates){
 						unlock=false;
 					}
 				}
