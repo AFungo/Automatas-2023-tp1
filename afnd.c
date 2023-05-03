@@ -55,7 +55,7 @@ bool pertence(AFN *t, char *chain){
 		}
 		if(unlock){
 			for (int i=0;i<MAX_STATES;i++){
-				if(actualState=t->finalStates[i]){
+				if(actualState==i && t->finalStates[i]==true){
 					return true;
 				}
 			}
