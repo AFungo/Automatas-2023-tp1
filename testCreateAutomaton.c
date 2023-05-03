@@ -55,4 +55,5 @@ int main (int argc, char *argv[]){
 	printf(test4(a)? "true \n":"false \n");
 	printf("test 5: ");
 	printf(test5(a)? "true \n":"false \n");
+	free(a);
 }
