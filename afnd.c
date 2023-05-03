@@ -74,7 +74,7 @@ int* cantOfStates(){
 int* clausuraInicial(int s, int alph, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE]){
 	static int arrOfstate[MAX_STATES];
 	memset(arrOfstate,-1, sizeof(arrOfstate));
-	arrOfstate[0][0] = s;
+	arrOfstate[0] = s;
 	int* p_cantOfStates = cantOfStates();
 	for(int i = 1; i<MAX_STATES; i++){
 		if(((*delta)[0][alph][i]==false) && (arrOfstate[0][i]==-1)){ // con  ==false funciona, pero con ==true no, no se actualiza la matriz?
@@ -97,15 +97,6 @@ int* move(int state, int alph, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE])
 	return states;
 }
 
-// stateArray* clausuraTransitiva(*stateArray state[MAX_STATES], int alph, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE]){
-// 	for(int i = 0; i<MAX_STATES; i++){
-// 		for(int j = 0; j<MAX_STATES; j++){
-// 			if(state[i][j] != -1){
-// 				(*delta)[state[i][j]][alph]
-// 			}
-// 		}
-// 	}
-// }
 
 
 struct AFD* aFNtoAFD(struct AFN *a){
@@ -124,10 +115,6 @@ struct AFD* aFNtoAFD(struct AFN *a){
 
 		
 	}
-	
-
-
-	
 	return d;
 
 
