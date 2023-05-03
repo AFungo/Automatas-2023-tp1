@@ -92,6 +92,7 @@ int main(int argc, char const *argv[])
     setAdd(set1,3);
     setAdd(set2,2);
     setAdd(set2,1);
+    //setAdd(set2,3);
     setAdd(set2,4);
     if (equalsSet(set1,set2)){
         printf("los sets son iguales");
