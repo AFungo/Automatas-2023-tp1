@@ -71,17 +71,14 @@ int* cantOfStates(){
 	return &cantOfStates;
 }
 
-int* clausuraInicial(int s, int alph, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE]){
+int* initialClosure(int s, int alph, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE]){
 	static int arrOfstate[MAX_STATES];
-	memset(arrOfstate,-1, sizeof(arrOfstate));
 	arrOfstate[0] = s;
-	int* p_cantOfStates = cantOfStates();
-	for(int i = 1; i<MAX_STATES; i++){
-		if(((*delta)[0][alph][i]==false) && (arrOfstate[0][i]==-1)){ // con  ==false funciona, pero con ==true no, no se actualiza la matriz?
-			arrOfstate[0][i]=i+1;
+	for(int i = 1; i < MAX_STATES; i++){
+		if((*delta)[s][alph][i] == true){
+			arrOfstate[i] = i;
 		}
 	}
-	(*p_cantOfStates)++;
 	return arrOfstate;
 }
 
@@ -90,7 +87,7 @@ int* move(int state, int alph, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE])
 	int j = 0;
 	for(int i = 0; i < MAX_STATES; i++){
 		if((*delta)[state][alph][i]==true){
-			state[j] = i;
+			states[j] = i;
 			j++;
 		}
 	}
@@ -98,26 +95,26 @@ int* move(int state, int alph, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE])
 }
 
 
-
-struct AFD* aFNtoAFD(struct AFN *a){
-	struct AFD *d = malloc(sizeof(struct AFD));
+void aFNtoAFD(AFN *a){
+	AFD *d = malloc(sizeof(AFD));
 	int *deltaAFD[MAX_STATES][ALPHABET_SIZE];
-	int* initialSt = clausuraInicial(a->initialState, a->alphabet[0], &(a->delta));
+	int* initialSt = initialClosure(a->initialState, a->alphabet[0], &(a->delta));
 	int longitud = sizeof(initialSt) / sizeof(initialSt[0]);
-	for(int i = 0; i < longitud; i++){
-		for(int j = 0; j < ALPHABET_SIZE; j++){
-			int* newState = move(initialSt[i], j, &(a->delta));
-			int longOfNewState = sizeof(newState) / (sizeof(newState[0]));
-			for(int k = 0; k < longOfNewState; k++){
-				deltaAFD[initialSt[i]][j][k] = newState[k];
-			}
+		for(int i = 0; i < longitud; i++){
+			printf("%d", initialSt[i]);
 		}
+	// for(int i = 0; i < longitud; i++){
+	// 	for(int j = 0; j < ALPHABET_SIZE; j++){
+	// 		int* newState = move(initialSt[i], j, &(a->delta));
+	// 		int longOfNewState = sizeof(newState) / (sizeof(newState[0]));
+	// 		for(int k = 0; k < longOfNewState; k++){
+	// 			deltaAFD[initialSt[i]][j][k] = newState[k];
+	// 		}
+	// 	}
 
 		
-	}
-	return d;
-
-
+	// }
+	//return d;
 }
 
 AFN initAutomaton(AFN automaton){
