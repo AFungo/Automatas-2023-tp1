@@ -6,21 +6,7 @@
 #include <stdbool.h>
 #include "afnd.h"
 
-struct AFN{
-	int states[MAX_STATES];
-	int alphabet[ALPHABET_SIZE];
-	booleanArray delta[MAX_STATES][ALPHABET_SIZE];
-	int initialState;
-	int finalStates[FINAL_STATES];
-};
 
-struct AFD{
-	int states[MAX_STATES];
-	int alphabet[ALPHABET_SIZE];
-	int delta[MAX_STATES][ALPHABET_SIZE]; // int o bool?
-	stateArray initialState;
-	stateArray finalState[FINAL_STATES];
-};
 
 bool pertenceAlph(int alph[], char *chain){
 	int i=0;
@@ -85,8 +71,8 @@ int* cantOfStates(){
 	return &cantOfStates;
 }
 
-stateArray* clausuraInicial(int s, int alph, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE]){
-	static stateArray arrOfstate[MAX_STATES];
+int* clausuraInicial(int s, int alph, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE]){
+	static int arrOfstate[MAX_STATES];
 	memset(arrOfstate,-1, sizeof(arrOfstate));
 	arrOfstate[0][0] = s;
 	int* p_cantOfStates = cantOfStates();
@@ -97,6 +83,18 @@ stateArray* clausuraInicial(int s, int alph, booleanArray (*delta)[MAX_STATES][A
 	}
 	(*p_cantOfStates)++;
 	return arrOfstate;
+}
+
+int* move(int state, int alph, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE]){
+	static int states[MAX_STATES];
+	int j = 0;
+	for(int i = 0; i < MAX_STATES; i++){
+		if((*delta)[state][alph][i]==true){
+			state[j] = i;
+			j++;
+		}
+	}
+	return states;
 }
 
 // stateArray* clausuraTransitiva(*stateArray state[MAX_STATES], int alph, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE]){
@@ -112,34 +110,26 @@ stateArray* clausuraInicial(int s, int alph, booleanArray (*delta)[MAX_STATES][A
 
 struct AFD* aFNtoAFD(struct AFN *a){
 	struct AFD *d = malloc(sizeof(struct AFD));
-	stateArray* initialSt = clausuraInicial(a->initialState, a->alphabet[0], &(a->delta));
-	for (int i = 0; i < MAX_STATES; i++) {
-    	for (int j = 0; j < MAX_STATES ; j++) {
-        	printf("%d", *(initialSt[i] + j));
-    	}
-    	printf("\n");
+	int *deltaAFD[MAX_STATES][ALPHABET_SIZE];
+	int* initialSt = clausuraInicial(a->initialState, a->alphabet[0], &(a->delta));
+	int longitud = sizeof(initialSt) / sizeof(initialSt[0]);
+	for(int i = 0; i < longitud; i++){
+		for(int j = 0; j < ALPHABET_SIZE; j++){
+			int* newState = move(initialSt[i], j, &(a->delta));
+			int longOfNewState = sizeof(newState) / (sizeof(newState[0]));
+			for(int k = 0; k < longOfNewState; k++){
+				deltaAFD[initialSt[i]][j][k] = newState[k];
+			}
+		}
+
+		
 	}
+	
 
 
 	
 	return d;
-	// for(int i = 0; i<=sizeof(initialSt); i++){
-	// 	int k = 1;
-	// 	for(int j = 0; j<=sizeof(initialSt[i]); j++){
-	// 		int* newState = clausura(initialSt[i][j], a->alphabet[k],&(a->delta));
-	// 		initialSt[i][j] 
-	// 		k++;
-	// 	}
-	// }
-	// int states[];
-	// for(int c = 0; c<=cantOfStates; c++){
-	// 	states[c] = c;
-	// }
-	// memcpy(d->states, states, sizeof(int)*cantOfStates);
-	// d->initialState = 0;
-	// memcpy(d->alphabet, a->alphabet, sizeof(int)*ALPHABET_SIZE);
 
-	// return d;
 
 }
 
