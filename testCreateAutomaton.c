@@ -42,10 +42,9 @@ int main (int argc, char *argv[]){
 								}; 
 	memcpy(a->states, states, sizeof(int)*MAX_STATES);
 	memcpy(a->alphabet, alph, sizeof(int)*ALPHABET_SIZE);
-//	memcpy(a->finalStates, finalSt, sizeof(int)*MAX_STATES);
 	memcpy(a->delta, delta, sizeof(int)*MAX_STATES*ALPHABET_SIZE);
 	a->initialState = 0;
-	a->finalStates[2] = 1; 
+	a->finalStates[2] = true; 
 	printf("test 1: ");
 	printf(test1(a)? "true \n":"false \n");
 	printf("test 2: ");
