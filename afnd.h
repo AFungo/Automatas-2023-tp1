@@ -2,7 +2,7 @@
 #define AFND_H
 #include <stdbool.h>
 #define MAX_STATES 3
-#define ALPHABET_SIZE 2
+#define ALPHABET_SIZE 3
 typedef bool booleanArray[MAX_STATES];
 
 typedef struct{
