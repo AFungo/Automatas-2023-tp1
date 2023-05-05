@@ -73,25 +73,46 @@ int* cantOfStates(){
 
 int* initialClosure(int s, int alph, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE]){
 	static int arrOfstate[MAX_STATES];
-	arrOfstate[0] = s;
 	for(int i = 1; i < MAX_STATES; i++){
 		if((*delta)[s][alph][i] == true){
-			arrOfstate[i] = i;
+				arrOfstate[i] = i;
+		}else{
+			arrOfstate[i] = -1;
 		}
 	}
 	return arrOfstate;
 }
 
-int* move(int state, int alph, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE]){
-	static int states[MAX_STATES];
-	int j = 0;
-	for(int i = 0; i < MAX_STATES; i++){
-		if((*delta)[state][alph][i]==true){
-			states[j] = i;
-			j++;
+//retorna un array con los nodos alcanzados por states, si por ningun valor de state
+//hay una transicion entonces el array sera [-1,-1,-1...] dependiendo la cantidad de estados
+//si hay una transicion, entonces retorna el valor del estado al que se llega
+//ejemplo, states = {0,-1,2} (si hay un -1 representa un espacion en blanco el estado seria {0,2})
+//el array retornado seria {0,1,-1} es decir que por el estado {0,2} se llega al estado {0,1-1} ({0,1})
+int* move(int states[MAX_STATES], int alph, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE]){
+	static int statesReached[MAX_STATES];
+	memset(statesReached, -1, sizeof(statesReached));
+	for(int j = 0; j < MAX_STATES; j++){
+		int k=0;
+		if(states[j] != -1){
+			for(int i = 0; i < MAX_STATES; i++){
+				if((*delta)[states[j]][alph][i]==true){
+					// verifico que al estaod que llego no llego otro estado revisado previamente
+					if(statesReached[k] == -1){ 
+						statesReached[k] = i;
+						k++;
+					}
+				}else {
+					// verificar si no esta el valor de un estado que pudo ser añadido previemente
+					// realizo estas verificaciones porque voy llenando un array de tamaño MAXSTATES
+					if(statesReached[k] == -1){
+						statesReached[k] = -1;
+					}
+					k++;
+				}
+			}
 		}
 	}
-	return states;
+	return statesReached;
 }
 
 
@@ -100,21 +121,20 @@ void aFNtoAFD(AFN *a){
 	int *deltaAFD[MAX_STATES][ALPHABET_SIZE];
 	int* initialSt = initialClosure(a->initialState, a->alphabet[0], &(a->delta));
 	int longitud = sizeof(initialSt) / sizeof(initialSt[0]);
-		for(int i = 0; i < longitud; i++){
-			printf("%d", initialSt[i]);
+	for(int i = 0; i <= longitud; i++){
+	 	printf("%d", initialSt[i]);
+	}
+	printf("\n");
+	for(int j = 1; j < ALPHABET_SIZE; j++){
+		int* mover = move(initialSt, j, &(a->delta)); 
+		// con initialSt ({0,-1,2}) para alph == 1 retorna bien el array, 
+		// con aplh == 2 retorna -1,-1,2 pero el correcto es -1,1,2
+		int lon = sizeof(mover) / sizeof(mover[0]);
+		for(int c = 0; c <= lon; c++){
+			printf("%d", mover[c]);
 		}
-	// for(int i = 0; i < longitud; i++){
-	// 	for(int j = 0; j < ALPHABET_SIZE; j++){
-	// 		int* newState = move(initialSt[i], j, &(a->delta));
-	// 		int longOfNewState = sizeof(newState) / (sizeof(newState[0]));
-	// 		for(int k = 0; k < longOfNewState; k++){
-	// 			deltaAFD[initialSt[i]][j][k] = newState[k];
-	// 		}
-	// 	}
-
-		
-	// }
-	//return d;
+	}
+	printf("\n");
 }
 
 AFN initAutomaton(AFN automaton){
