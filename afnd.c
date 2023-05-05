@@ -114,27 +114,67 @@ int* move(int states[MAX_STATES], int alph, booleanArray delta[MAX_STATES][ALPHA
 	}
 	return statesReached;
 }
-
+bool isInMatrix(int m[MAX_STATES][MAX_STATES], int a[MAX_STATES]){}
+int posInMatrix(int m[MAX_STATES][MAX_STATES], int a[MAX_STATES]){}
+void addFinal(AFN *a, AFD *d, int matrix[(int)pow(2,MAX_STATES)][(int)pow(2,MAX_STATES)]){}
+void addState(int states[MAX_STATES], int matrix[(int)pow(2,MAX_STATES)][(int)pow(2,MAX_STATES)], int cantOfElem){
+	int idx = 0;
+	bool validState = false;
+	while(!validState && idx < MAX_STATES){
+			if(mover[i] == -1){
+				i++;
+			}else{
+				validState = true;
+			}
+		}
+		if(validState){
+			memcpy(matrix[cantOfElem], mover, sizeof(int)*MAX_STATES);
+			cantOfElem++;
+		}
+}
 
 void aFNtoAFD(AFN *a){
 	AFD *d = malloc(sizeof(AFD));
-	int *deltaAFD[MAX_STATES][ALPHABET_SIZE];
+	int matrix[(int)pow(2,MAX_STATES)][(int)pow(2,MAX_STATES)];
+	int cantOfElem = 0;
+	int* mover;
+	int  pos;
+	int aux; //verifica si aparecen estados nuevos
+	memset(d->states,-1,sizeof(d->states));
+	bool validState = false;
+	memset(matrix, -1, sizeof(matrix));
 	int* initialSt = initialClosure(a->initialState, a->alphabet[0], (a->delta));
+	addState(initialSt, matrix,cantOfElem);
 	int longitud = sizeof(initialSt) / sizeof(initialSt[0]);
-	for(int i = 0; i <= longitud; i++){
-	 	printf("%d", initialSt[i]);
-	}
-	printf("\n");
 	for(int j = 1; j < ALPHABET_SIZE; j++){
-		int* mover;
-		mover = move(initialSt, j, (a->delta)); 
-		int lon = sizeof(mover) / sizeof(mover[0]);
-		for(int c = 0; c <= lon; c++){
-				printf("%d", mover[c]);
-		}
-		printf("\n");
+		mover = move(initialSt, j, (a->delta));
+		addState(mover, matrix, cantOfElem);
 	}
-	printf("\n");
+	bool statesLeft = true;
+	while(statesLeft){
+		aux = cantOfElem;
+		for(int i = 0; i < cantOfElem; i++){
+			for(alph = 1; a < ALPHABET_SIZE; a++){
+				int* newState;
+				newState = move(matrix[i], alph, a->delta);
+				if(!isInMatrix(matrix, newState)){
+					addState(newState, matrix, cantOfElem);
+					pos = posInMatrix(matrix, newState);
+					d->delta[i][alph] = pos;
+				}
+			}
+		}
+		if(cantOfElem == aux){
+			statesLeft = false;
+		}
+	}
+	for(int k = 0; k < cantOfElem; k++){
+		d->states[k] = k;
+	}
+
+	return d;
+	
+
 }
 
 AFN initAutomaton(AFN automaton){
