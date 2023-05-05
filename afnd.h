@@ -14,7 +14,7 @@ typedef struct{
 }AFN;
 
 typedef struct{
-	int states[MAX_STATES];
+	int states[pow(2,MAX_STATES)];
 	int alphabet[ALPHABET_SIZE];
 	int delta[MAX_STATES][ALPHABET_SIZE]; // int o bool?
 	int initialState[MAX_STATES];
