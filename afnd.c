@@ -71,10 +71,10 @@ int* cantOfStates(){
 	return &cantOfStates;
 }
 
-int* initialClosure(int s, int alph, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE]){
+int* initialClosure(int s, int alph, booleanArray delta[MAX_STATES][ALPHABET_SIZE]){
 	static int arrOfstate[MAX_STATES];
 	for(int i = 1; i < MAX_STATES; i++){
-		if((*delta)[s][alph][i] == true){
+		if(delta[s][alph][i] == true){
 				arrOfstate[i] = i;
 		}else{
 			arrOfstate[i] = -1;
@@ -88,14 +88,14 @@ int* initialClosure(int s, int alph, booleanArray (*delta)[MAX_STATES][ALPHABET_
 //si hay una transicion, entonces retorna el valor del estado al que se llega
 //ejemplo, states = {0,-1,2} (si hay un -1 representa un espacion en blanco el estado seria {0,2})
 //el array retornado seria {0,1,-1} es decir que por el estado {0,2} se llega al estado {0,1-1} ({0,1})
-int* move(int states[MAX_STATES], int alph, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE]){
+int* move(int states[MAX_STATES], int alph, booleanArray delta[MAX_STATES][ALPHABET_SIZE]){
 	static int statesReached[MAX_STATES];
 	memset(statesReached, -1, sizeof(statesReached));
 	for(int j = 0; j < MAX_STATES; j++){
 		int k=0;
 		if(states[j] != -1){
 			for(int i = 0; i < MAX_STATES; i++){
-				if((*delta)[states[j]][alph][i]==true){
+				if(delta[states[j]][alph][i]==true){
 					// verifico que al estaod que llego no llego otro estado revisado previamente
 					if(statesReached[k] == -1){ 
 						statesReached[k] = i;
@@ -119,20 +119,20 @@ int* move(int states[MAX_STATES], int alph, booleanArray (*delta)[MAX_STATES][AL
 void aFNtoAFD(AFN *a){
 	AFD *d = malloc(sizeof(AFD));
 	int *deltaAFD[MAX_STATES][ALPHABET_SIZE];
-	int* initialSt = initialClosure(a->initialState, a->alphabet[0], &(a->delta));
+	int* initialSt = initialClosure(a->initialState, a->alphabet[0], (a->delta));
 	int longitud = sizeof(initialSt) / sizeof(initialSt[0]);
 	for(int i = 0; i <= longitud; i++){
 	 	printf("%d", initialSt[i]);
 	}
 	printf("\n");
 	for(int j = 1; j < ALPHABET_SIZE; j++){
-		int* mover = move(initialSt, j, &(a->delta)); 
-		// con initialSt ({0,-1,2}) para alph == 1 retorna bien el array, 
-		// con aplh == 2 retorna -1,-1,2 pero el correcto es -1,1,2
+		int* mover;
+		mover = move(initialSt, j, (a->delta)); 
 		int lon = sizeof(mover) / sizeof(mover[0]);
 		for(int c = 0; c <= lon; c++){
-			printf("%d", mover[c]);
+				printf("%d", mover[c]);
 		}
+		printf("\n");
 	}
 	printf("\n");
 }
