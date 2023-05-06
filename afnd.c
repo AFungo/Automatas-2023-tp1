@@ -110,7 +110,7 @@ int* move(int states[MAX_STATES], int alph, booleanArray delta[MAX_STATES][ALPHA
 					k++;
 				}
 			}
-		}
+}
 	}
 	return statesReached;
 }
@@ -154,10 +154,28 @@ int posInMatrix(int m[MAX_STATES][MAX_STATES], int a[MAX_STATES]){
 	}
 	
 }
+bool isFinalState(AFN afn, int state){
+	for(int k = 0; k<MAX_STATES; k++){
+		if(afn.delta[k]!=-1 && k == state){
+			return true;
+		}
+	}
+	return false;
+}
 
+void addFinal(AFN *afn, AFD *afd, int matrix[(int)pow(2,MAX_STATES)][(int)pow(2,MAX_STATES)],int cantOfElem){
+	for(int i = 0; i < cantOfElem; i++){
+		int j = 0;
+		while(matrix[i][j] != -1){
+			int state = matrix[i][j];
+			if(isFinalState(*afn, state)){
+				afd->delta[i][state] = true;
+			}
+		}
+	}
+}
 
-void addFinal(AFN *a, AFD *d, int matrix[matrixSize][matrixSize]){}
-void addState(int states[MAX_STATES], int matrix[matrixSize][matrixSize], int cantOfElem){
+void addState(int states[MAX_STATES], int matrix[(int)pow(2,MAX_STATES)][(int)pow(2,MAX_STATES)], int cantOfElem){
 	int idx = 0;
 	bool validState = false;
 	while(!validState && idx < MAX_STATES){
@@ -173,51 +191,52 @@ void addState(int states[MAX_STATES], int matrix[matrixSize][matrixSize], int ca
 		}
 }
 
-// void aFNtoAFD(AFN *a){
-// 	AFD *d = malloc(sizeof(AFD));
-// 	int matrixSize =(int) pow(2,MAX_STATES)-1;
-// 	int matrix[matrixSize][(MAX_STATES)];
-// 	int cantOfElem = 0;
-// 	int alph;
-// 	int* mover;
-// 	int  pos;
-// 	int aux; //verifica si aparecen estados nuevos
-// 	memset(d->states,-1,sizeof(d->states));
-// 	bool validState = false;
-// 	memset(matrix, -1, sizeof(matrix));
-// 	int* initialSt = initialClosure(a->initialState, a->alphabet[0], (a->delta));
-// 	addState(initialSt, matrix,cantOfElem);
-// 	int longitud = sizeof(initialSt) / sizeof(initialSt[0]);
-// 	for(int j = 1; j < ALPHABET_SIZE; j++){
-// 		mover = move(initialSt, j, (a->delta));
-// 		addState(mover, matrix, cantOfElem);
-// 	}
-// 	bool statesLeft = true;
-// 	while(statesLeft){
-// 		aux = cantOfElem;
-// 		for(int i = 0; i < cantOfElem; i++){
-// 			for(alph = 1; a < ALPHABET_SIZE; a++){
-// 				int* newState;
-// 				newState = move(matrix[i], alph, a->delta);
-// 				if(!isInMatrix(matrix, newState)){
-// 					addState(newState, matrix, cantOfElem);
-// 					pos = posInMatrix(matrix, newState);
-// 					d->delta[i][alph] = pos;
-// 				}
-// 			}
-// 		}
-// 		if(cantOfElem == aux){
-// 			statesLeft = false;
-// 		}
-// 	}
-// 	for(int k = 0; k < cantOfElem; k++){
-// 		d->states[k] = k;
-// 	}
-
-// 	return d;
+void aFNtoAFD(AFN *afn){
+	AFD *afd = malloc(sizeof(AFD));
+	int matrix[(int)pow(2,MAX_STATES)][(int)pow(2,MAX_STATES)];
+	int cantOfElem = 0;
+	int* mover;
+	int  pos;
+	int aux; //verifica si aparecen estados nuevos
+	memset(afd->states,-1,sizeof(afd->states));
+	bool validState = false;
+	memset(matrix, -1, sizeof(matrix));
+	int* initialSt = initialClosure(afn->initialState, afn->alphabet[0], (afn->delta));
+	addState(initialSt, matrix,cantOfElem);
+	int longitud = sizeof(initialSt) / sizeof(initialSt[0]);
+	
+	for(int j = 1; j < ALPHABET_SIZE; j++){
+		mover = move(initialSt, j, (afn->delta));
+		addState(mover, matrix, cantOfElem);
+	}
+	bool statesLeft = true;
+	
+	while(statesLeft){
+		aux = cantOfElem;
+		for(int i = 0; i < cantOfElem; i++){
+			for(int alph = 1; alph < ALPHABET_SIZE; alph++){
+				int* newState;
+				newState = move(matrix[i], alph, afn->delta);
+				if(!isInMatrix(matrix, newState)){
+					addState(newState, matrix, cantOfElem);
+					pos = posInMatrix(matrix, newState);
+					afd->delta[i][alph] = pos;
+				}
+			}
+		}
+		if(cantOfElem == aux){
+			statesLeft = false;
+		}
+	}
+	
+	for(int k = 0; k < cantOfElem; k++){
+		afd->states[k] = k;
+	}
+	addFinal(afn, afd, matrix, cantOfElem);
+	return afd;
 	
 
-// }
+}
 
 AFN initAutomaton(AFN automaton){
 	
