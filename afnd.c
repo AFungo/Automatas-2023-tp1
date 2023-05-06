@@ -110,13 +110,34 @@ int* move(int states[MAX_STATES], int alph, booleanArray delta[MAX_STATES][ALPHA
 					k++;
 				}
 			}
-		}
+}
 	}
 	return statesReached;
 }
 bool isInMatrix(int m[MAX_STATES][MAX_STATES], int a[MAX_STATES]){}
 int posInMatrix(int m[MAX_STATES][MAX_STATES], int a[MAX_STATES]){}
-void addFinal(AFN *a, AFD *d, int matrix[(int)pow(2,MAX_STATES)][(int)pow(2,MAX_STATES)]){}
+
+bool isFinalState(AFN afn, int state){
+	for(int k = 0; k<MAX_STATES; k++){
+		if(afn->delta[k]!=-1 && k == state){
+			return true;
+		}
+	}
+	return false;
+}
+
+void addFinal(AFN *afn, AFD *afd, int matrix[(int)pow(2,MAX_STATES)][(int)pow(2,MAX_STATES)], cantOfElem){
+	for(int i = 0; i < cantOfElem; i++){
+		int j = 0;
+		while(matrix[i][j] != -1){
+			int state = matrix[i][j];
+			if(isFinalState(afn, state)){
+				afd->delta[i][state] = true;
+			}
+		}
+	}
+}
+
 void addState(int states[MAX_STATES], int matrix[(int)pow(2,MAX_STATES)][(int)pow(2,MAX_STATES)], int cantOfElem){
 	int idx = 0;
 	bool validState = false;
@@ -133,34 +154,36 @@ void addState(int states[MAX_STATES], int matrix[(int)pow(2,MAX_STATES)][(int)po
 		}
 }
 
-void aFNtoAFD(AFN *a){
-	AFD *d = malloc(sizeof(AFD));
+void aFNtoAFD(AFN *afn){
+	AFD *afd = malloc(sizeof(AFD));
 	int matrix[(int)pow(2,MAX_STATES)][(int)pow(2,MAX_STATES)];
 	int cantOfElem = 0;
 	int* mover;
 	int  pos;
 	int aux; //verifica si aparecen estados nuevos
-	memset(d->states,-1,sizeof(d->states));
+	memset(dfd->states,-1,sizeof(afd->states));
 	bool validState = false;
 	memset(matrix, -1, sizeof(matrix));
-	int* initialSt = initialClosure(a->initialState, a->alphabet[0], (a->delta));
+	int* initialSt = initialClosure(afn->initialState, afn->alphabet[0], (afn->delta));
 	addState(initialSt, matrix,cantOfElem);
 	int longitud = sizeof(initialSt) / sizeof(initialSt[0]);
+	
 	for(int j = 1; j < ALPHABET_SIZE; j++){
-		mover = move(initialSt, j, (a->delta));
+		mover = move(initialSt, j, (afn->delta));
 		addState(mover, matrix, cantOfElem);
 	}
 	bool statesLeft = true;
+	
 	while(statesLeft){
 		aux = cantOfElem;
 		for(int i = 0; i < cantOfElem; i++){
 			for(alph = 1; a < ALPHABET_SIZE; a++){
 				int* newState;
-				newState = move(matrix[i], alph, a->delta);
+				newState = move(matrix[i], alph, afn->delta);
 				if(!isInMatrix(matrix, newState)){
 					addState(newState, matrix, cantOfElem);
 					pos = posInMatrix(matrix, newState);
-					d->delta[i][alph] = pos;
+					afd->delta[i][alph] = pos;
 				}
 			}
 		}
@@ -168,10 +191,11 @@ void aFNtoAFD(AFN *a){
 			statesLeft = false;
 		}
 	}
+	
 	for(int k = 0; k < cantOfElem; k++){
 		d->states[k] = k;
 	}
-
+	addFinal(afn, afd, matrix, cantOfElem);
 	return d;
 	
 
