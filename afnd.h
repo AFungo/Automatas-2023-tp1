@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #define MAX_STATES 3
 #define ALPHABET_SIZE 3
+#define matrixSize (1 << MAX_STATES) -1
 typedef bool booleanArray[MAX_STATES];
 
 typedef struct{
@@ -14,12 +15,18 @@ typedef struct{
 }AFN;
 
 typedef struct{
-	int states[pow(2,MAX_STATES)];
+	int states[matrixSize];
 	int alphabet[ALPHABET_SIZE];
 	int delta[MAX_STATES][ALPHABET_SIZE]; // int o bool?
 	int initialState[MAX_STATES];
 	int finalState[MAX_STATES];
 }AFD;
+
+struct Pair {
+    bool first;
+    int second;
+}Pair;
+
 
 AFN readAutomaton(char *fileName);
 void automatonToString(AFN automaton);
