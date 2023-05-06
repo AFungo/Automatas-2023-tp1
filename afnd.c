@@ -256,6 +256,8 @@ void automatonToString(AFN automaton){
 	
 }
 
+
+
 /*int* move(int state, int alph, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE]){
 	static int states[MAX_STATES];
 	for(int i = 0; i < MAX_STATES; i++){
@@ -269,8 +271,8 @@ void automatonToString(AFN automaton){
 		}
 	}
 	return states;
-}
-
+}*/
+/*
 int[] clausuraLambdaArray(int[MAX_STATE] states, booleanArray delta){
 	int states[MAX_STATES];
 
@@ -285,9 +287,9 @@ int[] clausuraLambdaArray(int[MAX_STATE] states, booleanArray delta){
 		}
 	}
 }
+*/
 
-
-
+/*
 int[] clausuraLambda(int estado, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE]){
     int lambda = MAX_STATE - 1;//DIGO QUIEN ES LAMBA
 	int clausura[] = mover(state, lambda);//OBTENGO TODOS LOS ALCANZAVLES POR LAMBDA DEL ESTADO ACTUAL
@@ -308,15 +310,12 @@ int[] clausuraLambda(int estado, booleanArray (*delta)[MAX_STATES][ALPHABET_SIZE
 				}
 			}
 		}
-	
 	}
 	return explored;
 }
-
-AFN AFNtoAFD(AFN automaton){
-    
-}
 */
+//AFN AFNtoAFD(AFN automaton){}
+
 
 
 
