@@ -5,133 +5,55 @@
 #include <string.h>
 #include <stdbool.h>
 #include "afnd.h"
+#include "utils.h"
 
 
-bool pertenceAlph(int alph[], char *chain){
-	int i=0;
-	bool a=true;
-	int k;
-	char ascii[2];
-	while (i < strlen(chain) && a){
-		a=false;
-		k=0;
-		while (k<ALPHABET_SIZE && !a){
-			sprintf(ascii, "%d", alph[k]);
-			if(chain[i]==(int)ascii[0]){
-				a=true;
-			}
-		k++;
-		}
-	i++;		
-	}
-	return a;
-}
+
+
 //precondition: MAXSTATES and ALPHABETSIZE has to be correct.
-bool pertence(AFN *t, char *chain){
-	bool pA= pertenceAlph(t->alphabet,chain);
+bool pertence(AFN *automaton, char *chain){
+	bool pA= true;//pertenceAlph(t->alphabet,chain);
 	int ascii[2];
 	int ichain;
 	int k;
-	if (pA){
-		int actualState=t->initialState;
-		int i=0;
-		bool unlock=true;
-		int cantStates=sizeof(t->states)/sizeof(t->states[0]);
-		while (i<strlen(chain)&&unlock){
-			k=0;
-			while (k<cantStates){
-				if ((t->delta[actualState][(int)chain[i]-48][k])){
-					actualState=k;
-					k=cantStates;
-				} else {
-					k++;
-					if(k>=cantStates){
-						unlock=false;
-					}
-				}
-			}
-			i++;
-		}
-		if(unlock){
-			for (int i=0;i<MAX_STATES;i++){
-				if(actualState==i && t->finalStates[i]==true){
-					return true;
+	int actualState=automaton->initialState;
+	int i=0;
+	bool unlock=true;
+	int cantStates= automaton->states.cant;
+	while (i<strlen(chain)&&unlock){
+		k=0;
+		while (k<cantStates){
+			int actualStateIndex = getStateIndex(automaton->states, actualState);
+			int symbolIndex = getAlphabetIndex(automaton->alphabet, (int)chain[i]-48);
+			if ((automaton->delta[actualStateIndex][symbolIndex][k])){
+				actualState = automaton->states.states[k];
+				k=cantStates;
+			} else {
+				k++;
+				if(k>=cantStates){
+					unlock=false;
 				}
 			}
 		}
-		return false;		
-	} else {
-		return false;
+		i++;
 	}
+	if(unlock){
+		return isFinalState(*automaton, actualState);
+	}
+	return false;		
 }
 
-AFN initAutomaton(AFN automaton){
-	
-	for(int i = 0; i < MAX_STATES; i++){
-		automaton.states[i] = 0;
-	}
-	
-	for(int i = 0; i < MAX_STATES; i++){
-		automaton.finalStates[i] = 0;
-	}
-	
-	for(int i = 0; i < ALPHABET_SIZE; i++){
-		automaton.alphabet[i] = 0;
-	}
-	
-	for(int i = 0; i < MAX_STATES; i++){
-		for(int j = 0; j < ALPHABET_SIZE; j++){
-			for(int k = 0; k < MAX_STATES; k++){
-				(automaton.delta[i][j])[k] = false;
-			}
-		}
-	}
-	return automaton;
-}
 
-void getMultipleTransitions(AFN *automaton, char *trans, int transitions[ALPHABET_SIZE]){
-	
-	trans = strtok(trans, ",");
-	int symbol = atoi(trans);
-	addSymbolToAutomaton(automaton, &symbol);
-	transitions[symbol] = 1;
-//	printf("S = %d, ", symbol);
-	trans = strtok(NULL, ",");
-	while(trans != NULL){
-		symbol = atoi(trans);
-//		printf("S = %d, ", symbol);
-		addSymbolToAutomaton(automaton,&symbol);
-		transitions[symbol] = 1;
-		trans = strtok(NULL, ",");
-	} 
-/*	printf("\n trnsiciones:::");
-	for(int i = 0; i<ALPHABET_SIZE;i++){
-		if(transitions[i] == 1) printf("tras: %d,", i);
-	}	
-	printf("\n");*/
-}
-
-void addSymbolToAutomaton(AFN *automaton, int *symbol){
-	if(*symbol == 33) *symbol = ALPHABET_SIZE - 1;//is lambda
-	if(automaton->alphabet[*symbol] != 1) automaton->alphabet[*symbol] = 1;
-}
-
-void addInitialStateToAutomaton(AFN *automaton, int symbol){
-	automaton->states[symbol] = 1;
-	automaton->initialState = symbol;
-}
 
 AFN readAutomaton(char *fileName){
-
 	FILE *file = fopen(fileName, "r");
 	AFN automaton;
-	automaton = initAutomaton(automaton);
+	initAutomaton(&automaton);
 	char line[1000];
 
 	if(file == NULL){
 		printf("Failed to open file\n");
 	}	
-
 	while(fgets(line, sizeof(line), file)){
 		char *start = line;
 		while(*start == ' ' || *start == '\t' || *start == '\r' || *start == '\n') start++;
@@ -141,26 +63,20 @@ AFN readAutomaton(char *fileName){
 		else if(strstr(start, "inic->q") != NULL){
 			int symbol = atoi(strtok(start, "inic->q"));
 			addInitialStateToAutomaton(&automaton, symbol);
-			
 		}else if(strstr(start, "[label=")){
 
-			char *token;
+			char *token;	
     		char *label = strstr(start, "\"");
     		char *trans = strtok(label, "\"]");
-			int transitions[ALPHABET_SIZE];
+			Alphabet transitions;
+			initAlphabet(&transitions);
 
     		if(strstr(trans, ",")){//case if automaton have multiple transitions q3->q3 [label="1,2"];				
-				getMultipleTransitions(&automaton, trans, transitions);
-				//printf("\n trnsiciones:::");
-				/*for(int i = 0; i<ALPHABET_SIZE;i++){
-					if(transitions[i] == 1) printf("tras: %d,", i);
-				}*/	
-				//printf("\n");
+				getMultipleTransitions(&automaton, trans, &transitions);
 			}else{                  //case only one transition q0->q1 [label="1"];
                 int symbol = atoi(trans);
-			//	printf("SYMBOLO UNICO = %d \n", symbol);
-                addSymbolToAutomaton(&automaton, &symbol);
-                transitions[symbol] = 1;
+                addSymbolToAutomaton(&automaton, symbol);
+                addNewSymbolToAlphabet(&transitions, symbol);
             }
 
     		// Extract the first and second state using strtok()
@@ -172,21 +88,19 @@ AFN readAutomaton(char *fileName){
 			int arrival = atoi(strtok(arr, "q"));
 			
 			//add states to automaton if no in yet
-			if(automaton.states[departure] != 1) automaton.states[departure] = 1;
-			if(automaton.states[arrival] != 1) automaton.states[arrival] = 1;
-			
+			addStateToAutomaton(&automaton, departure);
+			addStateToAutomaton(&automaton, arrival);
+
 			//
-			for(int i = 0; i < ALPHABET_SIZE; i++){
-				if(transitions[i] == 1){
-					automaton.delta[departure][i][arrival] = true;	
-					transitions[i] = 0;
-				}
+			for(int i = 0; i < transitions.cant; i++){
+				int symbol = transitions.alphabet[i];
+				addNewDeltaToAutomaton(&automaton, departure, arrival, symbol);		
 			}
 	
 		}else if(strstr(start, "[shape=doublecircle]")){
 			char *trans = strtok(start, "[shape=doublecircle]");
 			int final = atoi(strtok(trans, "q"));
-			automaton.finalStates[final] = 1;
+			addNewFinalStateToAutomaton(&automaton, final);
 		}
 		
 	}
@@ -205,56 +119,28 @@ void writeAutomaton(char *fileName, AFN automaton){
 
     fprintf(file, "inic->q%d\n", automaton.initialState);
     
-	for(int i = 0; i < MAX_STATES; i++){
-        for(int j = 0; j < ALPHABET_SIZE; j++){
-            for(int k = 0; k < MAX_STATES; k++){
-                if(automaton.states[i] == 1 && automaton.alphabet[j] == 1  && automaton.delta[i][j][k] == true){ 
-					if(j == ALPHABET_SIZE -1) fprintf(file, "q%d->q%d [label:\"!\"];\n", i, k);
-					else fprintf(file, "q%d->q%d [label:\"%d\"];\n", i, k, j);
+	for(int i = 0; i < automaton.states.cant; i++){
+        for(int j = 0; j < automaton.alphabet.cant; j++){
+            for(int k = 0; k < automaton.states.cant; k++){
+                if(automaton.delta[i][j][k] == true){ 
+					int departure = automaton.states.states[i];
+					int arrival = automaton.states.states[k];
+					int symbol = automaton.alphabet.alphabet[j];
+					if(symbol == 0) fprintf(file, "q%d->q%d [label:\"!\"];\n", departure, arrival);
+					else fprintf(file, "q%d->q%d [label:\"%d\"];\n", departure, arrival, symbol);
                 }
             }
         }
     }
-    for(int i = 0; i<MAX_STATES;i++){
-         if(automaton.finalStates[i]==1) fprintf(file, "q%d[shape=doublecircle];\n", i);
+    for(int i = 0; i<automaton.finalStates.cant;i++){
+		int finalState = automaton.finalStates.states[i];
+        fprintf(file, "q%d[shape=doublecircle];\n", finalState);
     }
     fprintf(file, "}\n");
     fclose(file);
 }
 
 
-void automatonToString(AFN automaton){
-	printf("initial state = %d\n", automaton.initialState);
-	printf("States = ");
-	for(int i = 0; i<MAX_STATES;i++){
-		if(automaton.states[i]==1) printf("%d, ", i);
-	}
-	printf("\nFinal states = ");
-    for(int i = 0; i<MAX_STATES;i++){
-         if(automaton.finalStates[i]==1) printf("%d, ", i);
-    }
-
-	printf("\nAlphabet = ");
- 	for(int i = 0; i<ALPHABET_SIZE-1;i++){
-         if(automaton.alphabet[i] == 1)
-			printf("%d, ", i);
-	}
-	if(automaton.alphabet[ALPHABET_SIZE-1] == 1) printf("!");
-	printf("\nTransitions = \n");
-    for(int i = 0; i<ALPHABET_SIZE;i++){          
-		for(int j = 0; j <MAX_STATES;j++){
-			for(int k = 0; k <MAX_STATES; k++){
-				if(automaton.states[j] == 1 && automaton.alphabet[i] == 1  && automaton.delta[j][i][k] == true){ 
-					if(i == ALPHABET_SIZE - 1) printf("q%d -> q%d - label: !\n", j, k);
-					else printf("q%d -> q%d - label: %d\n", j, k, i);
-				}
-			}
-		}
-		
-	}	
-	
-	
-}
 
 
 
