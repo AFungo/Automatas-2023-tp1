@@ -42,6 +42,6 @@ struct Pair {
 AFN readAutomaton(char *fileName);
 void writeAutomaton(char *fileName, AFN automaton);
 bool pertence(AFN *t, char *chain);
-void aFNtoAFD(AFN *a);
+AFD aFNtoAFD(AFN *a);
 
 #endif

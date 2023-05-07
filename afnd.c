@@ -128,14 +128,6 @@ int posInMatrix(int m[MAX_STATES][MAX_STATES], int a[MAX_STATES]){
 	}
 	
 }
-bool isFinalState(AFN afn, int state){
-	for(int k = 0; k<MAX_STATES; k++){
-		if(afn.delta[k]!=-1 && k == state){
-			return true;
-		}
-	}
-	return false;
-}
 
 void addFinal(AFN *afn, AFD *afd, int matrix[(int)pow(2,MAX_STATES)][(int)pow(2,MAX_STATES)],int cantOfElem){
 	for(int i = 0; i < cantOfElem; i++){
@@ -165,7 +157,7 @@ void addState(int states[MAX_STATES], int matrix[(int)pow(2,MAX_STATES)][(int)po
 		}
 }
 
-void aFNtoAFD(AFN *afn){
+AFD aFNtoAFD(AFN *afn){
 	AFD *afd = malloc(sizeof(AFD));
 	int matrix[(int)pow(2,MAX_STATES)][(int)pow(2,MAX_STATES)];
 	int cantOfElem = 0;
@@ -207,7 +199,7 @@ void aFNtoAFD(AFN *afn){
 		afd->states[k] = k;
 	}
 	addFinal(afn, afd, matrix, cantOfElem);
-	return afd;
+	return *afd;
 	
 
 }
@@ -308,7 +300,7 @@ void writeAutomaton(char *fileName, AFN automaton){
 }
 
 
-	int main(int argc, char const *argv[]){
+int main(int argc, char const *argv[]){
 		printf("%d", matrixSize);
 		int matrix[matrixSize][(MAX_STATES)];
 		memset(matrix,-1,sizeof(matrix));
