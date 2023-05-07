@@ -7,29 +7,8 @@
 #include <math.h>
 #include "afnd.h"
 
-
-bool pertenceAlph(int alph[], char *chain){
-	int i=0;
-	bool a=true;
-	int k;
-	char ascii[2];
-	while (i < strlen(chain) && a){
-		a=false;
-		k=0;
-		while (k<ALPHABET_SIZE && !a){
-			sprintf(ascii, "%d", alph[k]);
-			if(chain[i]==(int)ascii[0]){ 
-				a=true;
-			}
-		k++;
-		}
-	i++;		
-	}
-	return a;
-}
-//precondition: MAXSTATES and ALPHABETSIZE has to be correct.
-bool pertence(AFN *t, char *chain){
-	bool pA= pertenceAlph(t->alphabet,chain);
+bool pertence(AFN *automaton, char *chain){
+	bool pA= true;//pertenceAlph(t->alphabet,chain);
 	int ascii[2];
 	int ichain;
 	int k;
@@ -64,6 +43,10 @@ bool pertence(AFN *t, char *chain){
 	} else {
 		return false;
 	}
+	if(unlock){
+		return isFinalState(*automaton, actualState);
+	}
+	return false;		
 }
 
 int* cantOfStates(){
@@ -201,7 +184,7 @@ void aFNtoAFD(AFN *afn){
 	memset(afd->states,-1,sizeof(afd->states));
 	bool validState = false;
 	memset(matrix, -1, sizeof(matrix));
-	int* initialSt = initialClosure(afn->initialState, afn->alphabet[0], (afn->delta));
+	int* initialSt = initialClosure(afn->initialState, afn->alphabet.alphabet[0], (afn->delta));
 	addState(initialSt, matrix,cantOfElem);
 	int longitud = sizeof(initialSt) / sizeof(initialSt[0]);
 	
@@ -237,31 +220,6 @@ void aFNtoAFD(AFN *afn){
 	
 
 }
-
-AFN initAutomaton(AFN automaton){
-	
-	for(int i = 0; i < MAX_STATES; i++){
-		automaton.states[i] = 0;
-	}
-	
-	for(int i = 0; i < MAX_STATES; i++){
-		automaton.finalStates[i] = 0;
-	}
-	
-	for(int i = 0; i < ALPHABET_SIZE; i++){
-		automaton.alphabet[i] = 0;
-	}
-	
-	for(int i = 0; i < MAX_STATES; i++){
-		for(int j = 0; j < ALPHABET_SIZE; j++){
-			for(int k = 0; k < MAX_STATES; k++){
-				(automaton.delta[i][j])[k] = false;
-			}
-		}
-	}
-	return automaton;
-}
-
 
 AFN readAutomaton(char *fileName){
 	FILE *file = fopen(fileName, "r");
@@ -374,32 +332,34 @@ void writeAutomaton(char *fileName, AFN automaton){
     fprintf(file, "}\n");
     fclose(file);
 }
-	
-}
 
-	// int main(int argc, char const *argv[]){
-	// 	printf("%d", matrixSize);
-	// 	int matrix[matrixSize][(MAX_STATES)];
-	// 	memset(matrix,-1,sizeof(matrix));
-	// 	int array[MAX_STATES]={2,4,6};
-	// 	bool x;
-	// 	int pos;
-	// 	memcpy(matrix[4],array,sizeof(array));
+
+	int main(int argc, char const *argv[]){
+		printf("%d", matrixSize);
+		int matrix[matrixSize][(MAX_STATES)];
+		memset(matrix,-1,sizeof(matrix));
+		int array[MAX_STATES]={2,4,6};
+		bool x;
+		int pos;
+		memcpy(matrix[4],array,sizeof(array));
 		
 		
-	// 	for (int i=0;i<matrixSize;i++){
-	// 		printf("\n");
-	// 		for (int k = 0; k<MAX_STATES; k++){
-	// 			printf("%d ", matrix[i][k]);
-	// 		}
-	// 	}
-	// 	printf("\n");
+		for (int i=0;i<matrixSize;i++){
+			printf("\n");
+			for (int k = 0; k<MAX_STATES; k++){
+				printf("%d ", matrix[i][k]);
+			}
+		}
+		printf("\n");
 		
 		
-	// 	x=isInMatrix(matrix,array);
-	// 	pos=posInMatrix(matrix,array);
-	// 	printf("\n");
-	// 	printf("%s\n", x == 1 ? "true" : "false");
-	// 	printf("\n");
-	// 	printf("Posicion: %d ",pos);
-	// }
+		x=isInMatrix(matrix,array);
+		pos=posInMatrix(matrix,array);
+		printf("\n");
+		printf("%s\n", x == 1 ? "true" : "false");
+		printf("\n");
+		printf("Posicion: %d ",pos);
+	}
+
+
+
