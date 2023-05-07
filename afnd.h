@@ -8,10 +8,21 @@ typedef bool booleanArray[MAX_STATES];
 
 typedef struct{
 	int states[MAX_STATES];
-	int alphabet[ALPHABET_SIZE];
+	int cant;
+}States;
+
+typedef struct{
+	int alphabet[ALPHABET_SIZE]; //lambda == 0
+	int cant;
+}Alphabet;
+
+typedef struct{
+	States states;
+	Alphabet alphabet;
 	booleanArray delta[MAX_STATES][ALPHABET_SIZE];
 	int initialState;
-	int finalStates[MAX_STATES];
+	States finalStates;
+	int alphabet_size;
 }AFN;
 
 typedef struct{
@@ -29,10 +40,7 @@ struct Pair {
 
 
 AFN readAutomaton(char *fileName);
-void automatonToString(AFN automaton);
-AFN initAutomaton(AFN automaton);
 void writeAutomaton(char *fileName, AFN automaton);
-bool pertenceAlph(int alph[], char *chain);
 bool pertence(AFN *t, char *chain);
 void aFNtoAFD(AFN *a);
 

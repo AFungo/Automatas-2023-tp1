@@ -6,64 +6,38 @@
 #include <stdbool.h>
 #include <math.h>
 #include "afnd.h"
+#include "utils.h"
 
-
-bool pertenceAlph(int alph[], char *chain){
-	int i=0;
-	bool a=true;
-	int k;
-	char ascii[2];
-	while (i < strlen(chain) && a){
-		a=false;
-		k=0;
-		while (k<ALPHABET_SIZE && !a){
-			sprintf(ascii, "%d", alph[k]);
-			if(chain[i]==(int)ascii[0]){ 
-				a=true;
-			}
-		k++;
-		}
-	i++;		
-	}
-	return a;
-}
-//precondition: MAXSTATES and ALPHABETSIZE has to be correct.
-bool pertence(AFN *t, char *chain){
-	bool pA= pertenceAlph(t->alphabet,chain);
+bool pertence(AFN *automaton, char *chain){
+	bool pA= true;//pertenceAlph(t->alphabet,chain);
 	int ascii[2];
 	int ichain;
 	int k;
-	if (pA){
-		int actualState=t->initialState;
-		int i=0;
-		bool unlock=true;
-		int cantStates=sizeof(t->states)/sizeof(t->states[0]);
-		while (i<strlen(chain)&&unlock){
-			k=0;
-			while (k<cantStates){
-				if ((t->delta[actualState][(int)chain[i]-48][k])){
-					actualState=k;
-					k=cantStates;
-				} else {
-					k++;
-					if(k>=cantStates){
-						unlock=false;
-					}
-				}
-			}
-			i++;
-		}
-		if(unlock){
-			for (int i=0;i<MAX_STATES;i++){
-				if(actualState==i && t->finalStates[i]==true){
-					return true;
+	int actualState=automaton->initialState;
+	int i=0;
+	bool unlock=true;
+	int cantStates= automaton->states.cant;
+	while (i<strlen(chain)&&unlock){
+		k=0;
+		while (k<cantStates){
+			int actualStateIndex = getStateIndex(automaton->states, actualState);
+			int symbolIndex = getAlphabetIndex(automaton->alphabet, (int)chain[i]-48);
+			if ((automaton->delta[actualStateIndex][symbolIndex][k])){
+				actualState = automaton->states.states[k];
+				k=cantStates;
+			} else {
+				k++;
+				if(k>=cantStates){
+					unlock=false;
 				}
 			}
 		}
-		return false;		
-	} else {
-		return false;
+		i++;
 	}
+	if(unlock){
+		return isFinalState(*automaton, actualState);
+	}
+	return false;		
 }
 
 int* cantOfStates(){
@@ -201,7 +175,7 @@ void aFNtoAFD(AFN *afn){
 	memset(afd->states,-1,sizeof(afd->states));
 	bool validState = false;
 	memset(matrix, -1, sizeof(matrix));
-	int* initialSt = initialClosure(afn->initialState, afn->alphabet[0], (afn->delta));
+	int* initialSt = initialClosure(afn->initialState, afn->alphabet.alphabet[0], (afn->delta));
 	addState(initialSt, matrix,cantOfElem);
 	int longitud = sizeof(initialSt) / sizeof(initialSt[0]);
 	
@@ -238,87 +212,40 @@ void aFNtoAFD(AFN *afn){
 
 }
 
-AFN initAutomaton(AFN automaton){
-	
-	for(int i = 0; i < MAX_STATES; i++){
-		automaton.states[i] = 0;
-	}
-	
-	for(int i = 0; i < MAX_STATES; i++){
-		automaton.finalStates[i] = 0;
-	}
-	
-	for(int i = 0; i < ALPHABET_SIZE; i++){
-		automaton.alphabet[i] = 0;
-	}
-	
-	for(int i = 0; i < MAX_STATES; i++){
-		for(int j = 0; j < ALPHABET_SIZE; j++){
-			for(int k = 0; k < MAX_STATES; k++){
-				(automaton.delta[i][j])[k] = false;
-			}
-		}
-	}
-	return automaton;
-}
-
-
 AFN readAutomaton(char *fileName){
 	FILE *file = fopen(fileName, "r");
-
 	AFN automaton;
-	
-	automaton = initAutomaton(automaton);
-	//automatonToString(automaton);
+	initAutomaton(&automaton);
+	char line[1000];
 
 	if(file == NULL){
 		printf("Failed to open file\n");
 	}	
-	char line[1000];
 	while(fgets(line, sizeof(line), file)){
 		char *start = line;
-		while(*start == ' ' || *start == '\t' || *start == '\r' || *start == '\n') {
-            start++;
-        }
+		while(*start == ' ' || *start == '\t' || *start == '\r' || *start == '\n') start++;
+       
+		if(strcmp(start, "digraph") == 0) continue;
 
-		if(strcmp(start, "digraph") == 0){
-
-			continue;
-
-		}else if(strstr(start, "inic->q") != NULL){
-
-			char *line = strtok(start, "inic->q");
-			int initState = atoi(line);
-			automaton.states[initState] = 1;
-			automaton.initialState = initState;
-
+		else if(strstr(start, "inic->q") != NULL){
+			int symbol = atoi(strtok(start, "inic->q"));
+			addInitialStateToAutomaton(&automaton, symbol);
 		}else if(strstr(start, "[label=")){
 
-			char *token;
+			char *token;	
     		char *label = strstr(start, "\"");
     		char *trans = strtok(label, "\"]");
-			int transitions[ALPHABET_SIZE];
+			Alphabet transitions;
+			initAlphabet(&transitions);
 
-    		if(strstr(trans, ",")){
+    		if(strstr(trans, ",")){//case if automaton have multiple transitions q3->q3 [label="1,2"];				
+				getMultipleTransitions(&automaton, trans, &transitions);
+			}else{                  //case only one transition q0->q1 [label="1"];
+                int symbol = atoi(trans);
+                addSymbolToAutomaton(&automaton, symbol);
+                addNewSymbolToAlphabet(&transitions, symbol);
+            }
 
-				trans = strtok(trans, ",");
-				
-				if(automaton.alphabet[atoi(trans)] != 1) automaton.alphabet[atoi(trans)] = 1;
-				
-				transitions[atoi(trans)] = 1;
-				trans = strtok(NULL, ",");
-				
-				while(trans != NULL){
-					if(automaton.alphabet[atoi(trans)] != 1) automaton.alphabet[atoi(trans)] = 1;
-					transitions[atoi(trans)] = 1;
-					trans = strtok(NULL, ",");
-				}
-
-			}else{
-				//printf("tokUnic = %d\n ", atoi(trans));
-				if(automaton.alphabet[atoi(trans)] != 1) automaton.alphabet[atoi(trans)] = 1;
-				transitions[atoi(trans)] = 1;
-			}
     		// Extract the first and second state using strtok()
     		token = strtok(start, "-> ");
     		char *dep = token;
@@ -326,27 +253,27 @@ AFN readAutomaton(char *fileName){
 			char *arr = token;
 			int departure = atoi(strtok(dep, "q"));
 			int arrival = atoi(strtok(arr, "q"));
-			//printf("Departure: %d, Arrival: %d\n", departure, arrival);
-			if(automaton.states[departure] != 1) automaton.states[departure] = 1;
-			if(automaton.states[arrival] != 1) automaton.states[arrival] = 1;
-			for(int i = 0; i < ALPHABET_SIZE; i++){	
-				//printf("dep: %d, arr: %d, trans: %d\n", departure, arrival, transitions[i]);
-				if(transitions[i] == 1){
-					automaton.delta[departure][i][arrival] = true;	
-					transitions[i] = 0;
-				}
-			}	
+			
+			//add states to automaton if no in yet
+			addStateToAutomaton(&automaton, departure);
+			addStateToAutomaton(&automaton, arrival);
+
+			//
+			for(int i = 0; i < transitions.cant; i++){
+				int symbol = transitions.alphabet[i];
+				addNewDeltaToAutomaton(&automaton, departure, arrival, symbol);		
+			}
+	
 		}else if(strstr(start, "[shape=doublecircle]")){
 			char *trans = strtok(start, "[shape=doublecircle]");
 			int final = atoi(strtok(trans, "q"));
-			automaton.finalStates[final] = 1;
+			addNewFinalStateToAutomaton(&automaton, final);
 		}
 		
 	}
 	return automaton;
 	fclose(file);
 }
-
 
 void writeAutomaton(char *fileName, AFN automaton){
     FILE *file = fopen(fileName, "w");
@@ -359,76 +286,54 @@ void writeAutomaton(char *fileName, AFN automaton){
 
     fprintf(file, "inic->q%d\n", automaton.initialState);
     
-	for(int i = 0; i < MAX_STATES; i++){
-        for(int j = 0; j < ALPHABET_SIZE; j++){
-            for(int k = 0; k < MAX_STATES; k++){
-                if(automaton.states[i] == 1 && automaton.alphabet[j] == 1  && automaton.delta[i][j][k] == true){ 
-					fprintf(file, "q%d->q%d [label:\"%d\"];\n", i, k, j);
+	for(int i = 0; i < automaton.states.cant; i++){
+        for(int j = 0; j < automaton.alphabet.cant; j++){
+            for(int k = 0; k < automaton.states.cant; k++){
+                if(automaton.delta[i][j][k] == true){ 
+					int departure = automaton.states.states[i];
+					int arrival = automaton.states.states[k];
+					int symbol = automaton.alphabet.alphabet[j];
+					if(symbol == 0) fprintf(file, "q%d->q%d [label:\"!\"];\n", departure, arrival);
+					else fprintf(file, "q%d->q%d [label:\"%d\"];\n", departure, arrival, symbol);
                 }
             }
         }
     }
-    for(int i = 0; i<MAX_STATES;i++){
-         if(automaton.finalStates[i]==1) fprintf(file, "q%d[shape=doublecircle];\n", i);
+    for(int i = 0; i<automaton.finalStates.cant;i++){
+		int finalState = automaton.finalStates.states[i];
+        fprintf(file, "q%d[shape=doublecircle];\n", finalState);
     }
     fprintf(file, "}\n");
     fclose(file);
 }
 
 
-void automatonToString(AFN automaton){
-	printf("initial state = %d\n", automaton.initialState);
-	printf("States = ");
-	for(int i = 0; i<MAX_STATES;i++){
-		if(automaton.states[i]==1) printf("%d, ", i);
-	}
-	printf("\nFinal states = ");
-    for(int i = 0; i<MAX_STATES;i++){
-         if(automaton.finalStates[i]==1) printf("%d, ", i);
-    }
-
-	printf("\nAlphabet = ");
- 	for(int i = 0; i<ALPHABET_SIZE;i++){
-         if(automaton.alphabet[i]) printf("%d, ", i);
-    }
-	printf("\nTransitions = \n");
-    for(int i = 0; i<ALPHABET_SIZE;i++){          
-		for(int j = 0; j <MAX_STATES;j++){
-			for(int k = 0; k <MAX_STATES; k++){
-				if(automaton.states[j] == 1 && automaton.alphabet[i] == 1  && automaton.delta[j][i][k] == true){ 
-					printf("q%d -> q%d - label: %d\n", j, k, i);
-				}
+	int main(int argc, char const *argv[]){
+		printf("%d", matrixSize);
+		int matrix[matrixSize][(MAX_STATES)];
+		memset(matrix,-1,sizeof(matrix));
+		int array[MAX_STATES]={2,4,6};
+		bool x;
+		int pos;
+		memcpy(matrix[4],array,sizeof(array));
+		
+		
+		for (int i=0;i<matrixSize;i++){
+			printf("\n");
+			for (int k = 0; k<MAX_STATES; k++){
+				printf("%d ", matrix[i][k]);
 			}
 		}
+		printf("\n");
 		
-	}	
+		
+		x=isInMatrix(matrix,array);
+		pos=posInMatrix(matrix,array);
+		printf("\n");
+		printf("%s\n", x == 1 ? "true" : "false");
+		printf("\n");
+		printf("Posicion: %d ",pos);
+	}
 
-	
-}
 
-	// int main(int argc, char const *argv[]){
-	// 	printf("%d", matrixSize);
-	// 	int matrix[matrixSize][(MAX_STATES)];
-	// 	memset(matrix,-1,sizeof(matrix));
-	// 	int array[MAX_STATES]={2,4,6};
-	// 	bool x;
-	// 	int pos;
-	// 	memcpy(matrix[4],array,sizeof(array));
-		
-		
-	// 	for (int i=0;i<matrixSize;i++){
-	// 		printf("\n");
-	// 		for (int k = 0; k<MAX_STATES; k++){
-	// 			printf("%d ", matrix[i][k]);
-	// 		}
-	// 	}
-	// 	printf("\n");
-		
-		
-	// 	x=isInMatrix(matrix,array);
-	// 	pos=posInMatrix(matrix,array);
-	// 	printf("\n");
-	// 	printf("%s\n", x == 1 ? "true" : "false");
-	// 	printf("\n");
-	// 	printf("Posicion: %d ",pos);
-	// }
+
