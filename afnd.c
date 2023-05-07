@@ -374,35 +374,6 @@ void writeAutomaton(char *fileName, AFN automaton){
     fprintf(file, "}\n");
     fclose(file);
 }
-
-
-void automatonToString(AFN automaton){
-	printf("initial state = %d\n", automaton.initialState);
-	printf("States = ");
-	for(int i = 0; i<MAX_STATES;i++){
-		if(automaton.states[i]==1) printf("%d, ", i);
-	}
-	printf("\nFinal states = ");
-    for(int i = 0; i<MAX_STATES;i++){
-         if(automaton.finalStates[i]==1) printf("%d, ", i);
-    }
-
-	printf("\nAlphabet = ");
- 	for(int i = 0; i<ALPHABET_SIZE;i++){
-         if(automaton.alphabet[i]) printf("%d, ", i);
-    }
-	printf("\nTransitions = \n");
-    for(int i = 0; i<ALPHABET_SIZE;i++){          
-		for(int j = 0; j <MAX_STATES;j++){
-			for(int k = 0; k <MAX_STATES; k++){
-				if(automaton.states[j] == 1 && automaton.alphabet[i] == 1  && automaton.delta[j][i][k] == true){ 
-					printf("q%d -> q%d - label: %d\n", j, k, i);
-				}
-			}
-		}
-		
-	}	
-
 	
 }
 
