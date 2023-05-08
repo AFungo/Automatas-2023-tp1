@@ -64,6 +64,7 @@ int* initialClosure(int s, int alph, booleanArray delta[MAX_STATES][ALPHABET_SIZ
 //el array retornado seria {0,1,-1} es decir que por el estado {0,2} se llega al estado {0,1-1} ({0,1})
 int* move(int states[MAX_STATES], int alph, booleanArray delta[MAX_STATES][ALPHABET_SIZE]){
 	static int statesReached[MAX_STATES];
+	printf("el maxstates es%d",MAX_STATES);
 	memset(statesReached, -1, sizeof(statesReached));
 	for(int j = 0; j < MAX_STATES; j++){
 		int k=0;
@@ -79,9 +80,8 @@ int* move(int states[MAX_STATES], int alph, booleanArray delta[MAX_STATES][ALPHA
 					// verificar si no esta el valor de un estado que pudo ser añadido previemente
 					// realizo estas verificaciones porque voy llenando un array de tamaño MAXSTATES
 					if(statesReached[k] == -1){
-						statesReached[k] = -1;
+						k++;
 					}
-					k++;
 				}
 			}
 }
@@ -89,7 +89,26 @@ int* move(int states[MAX_STATES], int alph, booleanArray delta[MAX_STATES][ALPHA
 	return statesReached;
 }
 
-struct Pair matrixUtils(int m[MAX_STATES][MAX_STATES], int a[MAX_STATES]){	
+int* closure(int states[MAX_STATES], booleanArray delta[MAX_STATES][ALPHABET_SIZE]){
+	static int statesReached[MAX_STATES];
+	memset(statesReached, -1, sizeof(statesReached));
+	for(int j = 0; j < MAX_STATES; j++){
+		if(states[j] != -1){
+			statesReached[j] = states[j];
+			for(int i = 0; i < MAX_STATES; i++){
+				if(delta[statesReached[j]][0][i]==true){
+					// verifico que al estaod que llego no llego otro estado revisado previamente
+					if(statesReached[i] == -1){ 
+						statesReached[i] = i;
+					}
+				}
+			}
+		}	
+	}
+	return statesReached;
+}
+
+struct Pair matrixUtils(int m[matrixSize][MAX_STATES], int a[MAX_STATES]){	
 	bool isIn=false;
 	bool isValid = true;
 	int pos;
@@ -115,10 +134,10 @@ struct Pair matrixUtils(int m[MAX_STATES][MAX_STATES], int a[MAX_STATES]){
 	return res;
 }
 
-bool isInMatrix(int m[MAX_STATES][MAX_STATES], int a[MAX_STATES]){
+bool isInMatrix(int m[matrixSize][MAX_STATES], int a[MAX_STATES]){
 	matrixUtils(m,a).first;
 }
-int posInMatrix(int m[MAX_STATES][MAX_STATES], int a[MAX_STATES]){
+int posInMatrix(int m[matrixSize][MAX_STATES], int a[MAX_STATES]){
 	struct Pair p= matrixUtils(m,a);
 	if (p.first)
 	{
@@ -129,19 +148,20 @@ int posInMatrix(int m[MAX_STATES][MAX_STATES], int a[MAX_STATES]){
 	
 }
 
-void addFinal(AFN *afn, AFD *afd, int matrix[(int)pow(2,MAX_STATES)][(int)pow(2,MAX_STATES)],int cantOfElem){
-	for(int i = 0; i < cantOfElem; i++){
+void addFinal(AFN *afn, AFD *afd, int matrix[matrixSize][MAX_STATES],int *cantOfElem){
+	for(int i = 0; i < *cantOfElem; i++){
 		int j = 0;
 		while(matrix[i][j] != -1){
 			int state = matrix[i][j];
 			if(isFinalState(*afn, state)){
 				afd->delta[i][state] = true;
 			}
+			j++;
 		}
 	}
 }
 
-void addState(int states[MAX_STATES], int matrix[(int)pow(2,MAX_STATES)][(int)pow(2,MAX_STATES)], int cantOfElem){
+void addState(int states[MAX_STATES], int matrix[matrixSize][MAX_STATES], int *cantOfElem){
 	int idx = 0;
 	bool validState = false;
 	while(!validState && idx < MAX_STATES){
@@ -152,14 +172,15 @@ void addState(int states[MAX_STATES], int matrix[(int)pow(2,MAX_STATES)][(int)po
 			}
 		}
 		if(validState){
-			memcpy(matrix[cantOfElem], states, sizeof(int)*MAX_STATES);
-			cantOfElem++;
+			memcpy(matrix[(*cantOfElem)], states, sizeof(int)*MAX_STATES);
+			(*cantOfElem)++;
 		}
+		printf("cant en add: %d\n",(*cantOfElem));
 }
 
 AFD aFNtoAFD(AFN *afn){
 	AFD *afd = malloc(sizeof(AFD));
-	int matrix[(int)pow(2,MAX_STATES)][(int)pow(2,MAX_STATES)];
+	int matrix[matrixSize][MAX_STATES];
 	int cantOfElem = 0;
 	int* mover;
 	int  pos;
@@ -167,14 +188,23 @@ AFD aFNtoAFD(AFN *afn){
 	memset(afd->states,-1,sizeof(afd->states));
 	bool validState = false;
 	memset(matrix, -1, sizeof(matrix));
+	for(int d = 0; d < matrixSize; d++){
+        printf("\n");
+        for(int k = 0; k < MAX_STATES; k++){
+            printf("%d",matrix[d][k]);
+        }
+    }
 	int* initialSt = initialClosure(afn->initialState, afn->alphabet.alphabet[0], (afn->delta));
-	addState(initialSt, matrix,cantOfElem);
+	memcpy(afd->initialState, initialSt,sizeof(int)*MAX_STATES);
+	addState(initialSt, matrix, &(cantOfElem));
+	
 	int longitud = sizeof(initialSt) / sizeof(initialSt[0]);
 	
-	for(int j = 1; j < ALPHABET_SIZE; j++){
-		mover = move(initialSt, j, (afn->delta));
-		addState(mover, matrix, cantOfElem);
-	}
+	// for(int j = 1; j < ALPHABET_SIZE; j++){
+	// 	mover = move(initialSt, j, (afn->delta));
+	// 	addState(mover, matrix, &(cantOfElem));
+	// }
+	//printf("cantOfElem: %d\n", cantOfElem);
 	bool statesLeft = true;
 	
 	while(statesLeft){
@@ -182,23 +212,58 @@ AFD aFNtoAFD(AFN *afn){
 		for(int i = 0; i < cantOfElem; i++){
 			for(int alph = 1; alph < ALPHABET_SIZE; alph++){
 				int* newState;
+				printf("estado original");
+				for(int l = 0; l < MAX_STATES; l++){
+					printf("%d ",matrix[i][l]);
+				}
+				printf("\n");
 				newState = move(matrix[i], alph, afn->delta);
+				printf("move Newstate");
+				for(int p = 0; p < MAX_STATES; p++){
+					printf("%d",newState[p]);
+				}
+				newState = closure(newState,afn->delta);
+				printf("\n newState: ");
+				for(int p = 0; p < MAX_STATES; p++){
+					printf("%d",newState[p]);
+				}
+				printf("\n");	
 				if(!isInMatrix(matrix, newState)){
-					addState(newState, matrix, cantOfElem);
+					addState(newState, matrix, &(cantOfElem));
+					//printf("cantOfElem in If: %d\n", cantOfElem);
 					pos = posInMatrix(matrix, newState);
 					afd->delta[i][alph] = pos;
 				}
+				//printf("cantOfElem in for alph: %d\n", cantOfElem);
 			}
+			//printf("cantOfElem in for i: %d\n", cantOfElem);
 		}
 		if(cantOfElem == aux){
 			statesLeft = false;
 		}
+		printf("%s\n", statesLeft == 1 ? "true" : "false");
 	}
+	for(int d = 0; d < matrixSize; d++){
+        printf("\n");
+        for(int k = 0; k < MAX_STATES; k++){
+            printf("%d",matrix[d][k]);
+        }
+    }
 	
 	for(int k = 0; k < cantOfElem; k++){
 		afd->states[k] = k;
 	}
-	addFinal(afn, afd, matrix, cantOfElem);
+	printf("cantOfElem: %d\n", cantOfElem);
+	for(int h = 0; h < cantOfElem; h++){
+		for(int t = 0; t < MAX_STATES; t++){
+			if(matrix[h][t] == afn->finalStates.states[0]){
+				memcpy(afd->finalState[h], matrix[h], sizeof(afd->finalState[h]));
+				break;
+			}
+		}
+	}
+	addFinal(afn, afd, matrix, &(cantOfElem));
+
 	return *afd;
 	
 
@@ -300,32 +365,43 @@ void writeAutomaton(char *fileName, AFN automaton){
 }
 
 
-int main(int argc, char const *argv[]){
-		printf("%d", matrixSize);
-		int matrix[matrixSize][(MAX_STATES)];
-		memset(matrix,-1,sizeof(matrix));
-		int array[MAX_STATES]={2,4,6};
-		bool x;
-		int pos;
-		memcpy(matrix[4],array,sizeof(array));
+// int main(int argc, char const *argv[]){
+// 		printf("%d", matrixSize);
+// 		int matrix[matrixSize][(MAX_STATES)];
+// 		memset(matrix,-1,sizeof(matrix));
+// 		int array[MAX_STATES]={2,4,6};
+// 		int array2[MAX_STATES]={2,4,6};
+// 		int array3[MAX_STATES]={3,5,6};
+// 		bool x;
+// 		int pos;
+// 		// memcpy(matrix[4],array,sizeof(array));
+// 		int cant = 0;
+// 		addState(array, matrix,&(cant));
+// 		printf("%d\n",cant);
+
+	
+// 		addState(array2, matrix,&(cant));
+// 		printf("%d\n",cant);
+
+// 		addState(array3, matrix,&(cant));
+// 		printf("%d\n",cant);
+		
+// 		for (int i=0;i<matrixSize;i++){
+// 			printf("\n");
+// 			for (int k = 0; k<MAX_STATES; k++){
+// 				printf("%d ", matrix[i][k]);
+// 			}
+// 		}
+// 		printf("\n");
 		
 		
-		for (int i=0;i<matrixSize;i++){
-			printf("\n");
-			for (int k = 0; k<MAX_STATES; k++){
-				printf("%d ", matrix[i][k]);
-			}
-		}
-		printf("\n");
-		
-		
-		x=isInMatrix(matrix,array);
-		pos=posInMatrix(matrix,array);
-		printf("\n");
-		printf("%s\n", x == 1 ? "true" : "false");
-		printf("\n");
-		printf("Posicion: %d ",pos);
-	}
+// 		x=isInMatrix(matrix,array);
+// 		pos=posInMatrix(matrix,array);
+// 		printf("\n");
+// 		printf("%s\n", x == 1 ? "true" : "false");
+// 		printf("\n");
+// 		printf("Posicion: %d ",pos);
+// 	}
 
 
 
