@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 
 int main (int argc, char *argv[]){
 
@@ -20,7 +21,7 @@ int main (int argc, char *argv[]){
 	States finalSt;
     finalSt.cant = 1;
     finalSt.states[0] = 2;
-	booleanArray delta[4][ALPHABET_SIZE] = { //			0					         1          		2           
+	booleanArray delta[MAX_STATES][ALPHABET_SIZE] = { //			0					         1          		2           
                                             /*0*/	{{true,false,true,false},{false,true,true,false},{false,false,true,false}},
                                             /*1*/	{{false,true,false,false},{false,false,true,false},{true,false,false,false}},
                                             /*2*/	{{false,false,false,false},{true,true,false,true},{false,true,false,false}},
@@ -38,19 +39,38 @@ int main (int argc, char *argv[]){
 	a->initialState = 0;
 	AFD *afd = malloc(sizeof(AFD));
     *afd = aFNtoAFD(a);
-    for(int c = 0; c < MAX_STATES; c++){
-        printf("%d",afd->initialState[c]);
-    }
-    printf("\n");;
-     for(int d = 0; d < matrixSize; d++){
-        printf("\n");
-        for(int k = 0; k < MAX_STATES; k++){
-            printf("%d",afd->finalState[d][k]);
+
+    int deltaResult[MAX_STATES][ALPHABET_SIZE] ={{0,1,2},{0,1,3},{0,1,3},{0,1,3}};
+    bool testDelta=true; 
+
+    for (int i = 0; i < 4; i++){
+        for (int k = 0; k < 3; k++){
+            if(deltaResult[i][k]!=afd->delta[i][k]){
+                testDelta=false;
+            }
         }
+        
     }
-    printf("\n");
-    for(int y = 0; y < matrixSize; y++){
-        printf("%d",afd->states[y]);
+    bool testFinalSt=true;
+    int finalStResult[MAX_STATES][MAX_STATES] ={{0,-1,2,-1},{0,1,2,3},{-1,1,2,-1},{0,1,2,-1}};
+    for (int i = 0; i < 4; i++){
+        for (int k = 0; k < 4; k++){
+            if(finalStResult[i][k]!=afd->finalState[i][k]){
+                testFinalSt=false;
+            }
+        }
+        
     }
-    
+
+    bool testStates=true;
+    int StatesResult[MAX_STATES][MAX_STATES] ={{0,-1,2,-1},{0,1,2,3},{-1,1,2,-1},{0,1,2,-1}};
+    for (int i = 0; i < 4; i++){
+        for (int k = 0; k < 4; k++){
+            if(finalStResult[i][k]!=afd->finalState[i][k]){
+                testFinalSt=false;
+            }
+        }
+        
+    }    
+    printf("Resultado del test: %s",(testDelta&&testFinalSt&&testStates==true)? "true \n":"false \n");
 }
