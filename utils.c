@@ -66,26 +66,13 @@ bool pertenceAlph(int alph[], char *chain){
 }
 
 void initAutomaton(AFN *automaton){
-	
-	for(int i = 0; i < MAX_STATES; i++){
-		automaton->states.states[i] = -1;
-	}
+	memset(automaton->states.states,-1,sizeof(automaton->states.states));
+	memset(automaton->finalStates.states,-1,sizeof(automaton->finalStates.states));
+	memset(automaton->alphabet.alphabet,-1,sizeof(automaton->alphabet.alphabet));
+	memset(automaton->delta,false,sizeof(automaton->delta));
 	automaton->states.cant = 0;
-	for(int i = 0; i < MAX_STATES; i++){
-		automaton->finalStates.states[i] = -1;
-	}
 	automaton->finalStates.cant = 0;
-	for(int i = 0; i < ALPHABET_SIZE; i++){
-		automaton->alphabet.alphabet[i] = -1;
-	}
 	automaton->alphabet.cant = 0;
-	for(int i = 0; i < MAX_STATES; i++){
-		for(int j = 0; j < ALPHABET_SIZE; j++){
-			for(int k = 0; k < MAX_STATES; k++){
-				automaton->delta[i][j][k] = false;
-			}
-		}
-	}
 }
 
 void getMultipleTransitions(AFN *automaton, char *trans, Alphabet *transitions){
