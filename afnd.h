@@ -1,7 +1,8 @@
 #ifndef AFND_H
 #define AFND_H
 #include <stdbool.h>
-#define MAX_STATES 3
+#include <math.h>
+#define MAX_STATES 4
 #define ALPHABET_SIZE 3
 #define matrixSize (1 << MAX_STATES) -1
 typedef bool booleanArray[MAX_STATES];
@@ -30,7 +31,7 @@ typedef struct{
 	int alphabet[ALPHABET_SIZE];
 	int delta[MAX_STATES][ALPHABET_SIZE]; // int o bool?
 	int initialState[MAX_STATES];
-	int finalState[MAX_STATES];
+	int finalState[matrixSize][MAX_STATES];
 }AFD;
 
 struct Pair {
