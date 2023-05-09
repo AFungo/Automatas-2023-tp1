@@ -100,16 +100,20 @@ void addInitialStateToAutomaton(AFN *automaton, int state){
 }
 
 void addStateToAutomaton(AFN *automaton, int state){
+	addStateToStates(&automaton->states, state);
+}
+
+void addStateToStates(States *states, int state){
 	bool isNewState = true;
 	int i = 0;
-	for(i; i < automaton->states.cant; i++){
-		if(automaton->states.states[i] == state){
+	for(i; i < states->cant; i++){
+		if(states->states[i] == state){
 			isNewState = false;
 		}
 	}
 	if(isNewState){
-		automaton->states.states[i] = state;
-		automaton->states.cant++;
+		states->states[i] = state;
+		states->cant++;
 	}
 }
 
@@ -177,4 +181,136 @@ bool isFinalState(AFN automaton, int s){
 		}
 	}	
 	return false;
+}
+
+struct Pair objectIsInMatriz(int m[matrixSize][MAX_STATES], int a[MAX_STATES]){	
+	bool isIn=false;
+	bool isValid = true;
+	int pos;
+	int i=0;
+	int k;
+	while (i<matrixSize && !isIn){
+		k=0;
+		isValid=true;
+		while (k<MAX_STATES && isValid){
+			if (m[i][k]==a[k]){
+				k++;
+			} else {
+				isValid=false;
+			}
+			if (k==MAX_STATES && isValid){
+				isIn=true;
+				pos=i;
+			}
+		}
+		i++;
+	}
+	struct Pair res = {isIn,pos};
+	return res;
+}
+
+bool isInMatrix(int m[matrixSize][MAX_STATES], int a[MAX_STATES]){
+	objectIsInMatriz(m,a).first;
+}
+
+int posInMatrix(int m[matrixSize][MAX_STATES], int a[MAX_STATES]){
+	struct Pair p= objectIsInMatriz(m,a);
+	if (p.first)
+	{
+		return p.second;
+	} else {
+		return -1;
+	}
+	
+}
+
+void addFinal(AFN *afn, AFD *afd, int matrix[matrixSize][MAX_STATES],int cantOfElem){
+	for(int h = 0; h < cantOfElem; h++){
+		for(int t = 0; t < MAX_STATES; t++){
+			for(int i = 0; i < afn->finalStates.cant; i++){
+				if(matrix[h][t] == afn->finalStates.states[i]){
+					memcpy(afd->finalState[h], matrix[h], sizeof(afd->finalState[h]));
+					break;
+				}	
+			}
+		}
+	}
+}
+
+void addState(int states[MAX_STATES], int matrix[matrixSize][MAX_STATES], int *cantOfElem){
+	int idx = 0;
+	bool validState = false;
+	while(!validState && idx < MAX_STATES){
+			if(states[idx] == -1){
+				idx++;
+			}else{
+				validState = true;
+			}
+		}
+		if(validState){
+			memcpy(matrix[(*cantOfElem)], states, sizeof(int)*MAX_STATES);
+			(*cantOfElem)++;
+		}
+}
+
+int* closure(int states[MAX_STATES], booleanArray delta[MAX_STATES][ALPHABET_SIZE]){
+	static int statesReached[MAX_STATES];
+	memset(statesReached, -1, sizeof(statesReached));
+	for(int j = 0; j < MAX_STATES; j++){
+		if(states[j] != -1){
+			statesReached[j] = states[j];
+			for(int i = 0; i < MAX_STATES; i++){
+				if(delta[statesReached[j]][0][i]==true){
+					// verifico que al estaod que llego no llego otro estado revisado previamente
+					if(statesReached[i] == -1){ 
+						statesReached[i] = i;
+					}
+				}
+			}
+		}	
+	}
+	return statesReached;
+}
+
+//retorna un array con los nodos alcanzados por states, si por ningun valor de state
+//hay una transicion entonces el array sera [-1,-1,-1...] dependiendo la cantidad de estados
+//si hay una transicion, entonces retorna el valor del estado al que se llega
+//ejemplo, states = {0,-1,2} (si hay un -1 representa un espacion en blanco el estado seria {0,2})
+//el array retornado seria {0,1,-1} es decir que por el estado {0,2} se llega al estado {0,1-1} ({0,1})
+int* move(int states[MAX_STATES], int alph, booleanArray delta[MAX_STATES][ALPHABET_SIZE]){
+	static int statesReached[MAX_STATES];
+	memset(statesReached, -1, sizeof(statesReached));
+	for(int j = 0; j < MAX_STATES; j++){
+		int k=0;
+		if(states[j] != -1){
+			for(int i = 0; i < MAX_STATES; i++){
+				if(delta[states[j]][alph][i]==true){
+					// verifico que al estaod que llego no llego otro estado revisado previamente
+					if(statesReached[k] == -1){ 
+						statesReached[k] = i;
+					}
+				}else {
+					// verificar si no esta el valor de un estado que pudo ser añadido previemente
+					// realizo estas verificaciones porque voy llenando un array de tamaño MAXSTATES
+					if(statesReached[k] == -1){
+						statesReached[k] = -1;
+					}
+				}
+			k++;
+		}
+}
+	}
+	return statesReached;
+}
+
+int* initialClosure(int s, int alph, booleanArray delta[MAX_STATES][ALPHABET_SIZE]){
+	static int arrOfstate[MAX_STATES];
+	for(int i = 1; i < MAX_STATES; i++){
+		if(delta[s][alph][i] == true){
+				arrOfstate[i] = i;
+		}else{
+			arrOfstate[i] = -1;
+		}
+	}
+	return arrOfstate;
 }

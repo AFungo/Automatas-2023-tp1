@@ -2,7 +2,7 @@
 #define AFND_H
 #include <stdbool.h>
 #include <math.h>
-#define MAX_STATES 4
+#define MAX_STATES 10
 #define ALPHABET_SIZE 3
 #define matrixSize (1 << MAX_STATES) -1
 typedef bool booleanArray[MAX_STATES];
@@ -27,17 +27,12 @@ typedef struct{
 }AFN;
 
 typedef struct{
-	int states[matrixSize];
-	int alphabet[ALPHABET_SIZE];
-	int delta[MAX_STATES][ALPHABET_SIZE]; // int o bool?
+	States states;
+	Alphabet alphabet;
+	int delta[MAX_STATES][ALPHABET_SIZE];
 	int initialState[MAX_STATES];
 	int finalState[matrixSize][MAX_STATES];
 }AFD;
-
-struct Pair {
-    bool first;
-    int second;
-}Pair;
 
 
 AFN readAutomaton(char *fileName);
