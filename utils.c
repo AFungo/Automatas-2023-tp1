@@ -106,7 +106,7 @@ void addStateToAutomaton(AFN *automaton, int state){
 void addStateToStates(States *states, int state){
 	bool isNewState = true;
 	int i = 0;
-	for(i; i < states->cant; i++){
+	for(i = 0; i < states->cant; i++){
 		if(states->states[i] == state){
 			isNewState = false;
 		}
@@ -135,7 +135,6 @@ void addNewDeltaToAutomaton(AFN *automaton, int departure, int arrival, int symb
 	int departureIndex = getStateIndex(automaton->states, departure);
 	int arrivalIndex = getStateIndex(automaton->states, arrival);
 	int symbolIndex = getAlphabetIndex(automaton->alphabet, symbol);
-
 	automaton->delta[departureIndex][symbolIndex][arrivalIndex] = true;
 }
 
@@ -183,45 +182,86 @@ bool isFinalState(AFN automaton, int s){
 	return false;
 }
 
-struct Pair objectIsInMatriz(int m[matrixSize][MAX_STATES], int a[MAX_STATES]){	
-	bool isIn=false;
-	bool isValid = true;
-	int pos;
-	int i=0;
-	int k;
-	while (i<matrixSize && !isIn){
-		k=0;
-		isValid=true;
-		while (k<MAX_STATES && isValid){
-			if (m[i][k]==a[k]){
-				k++;
-			} else {
-				isValid=false;
-			}
-			if (k==MAX_STATES && isValid){
-				isIn=true;
-				pos=i;
+// struct Pair objectIsInMatriz(States m[matrixSize], States a){	
+// 	bool isIn=true;
+// 	bool isValid = true;
+// 	int pos;
+// 	int i=0;
+// 	int k;
+// 	while (i<matrixSize && !isIn){
+// 		k=0;
+// 		isValid=true;
+// 		States s = m[i];
+// 		for(int j=0; j<s.cant; j){
+// 			for(int k=0; k<a.cant; k++){
+// 				if(getStateIndex)
+// 			}
+// 		}
+// 		i++;
+// 	}
+// 	struct Pair res = {isIn,pos};
+// 	return res;
+// }
+
+
+bool isInMatrix(States m[matrixSize], States a, int matrizSize){
+	for(int i=0; i<matrizSize; i++){
+		if(statesAreEquals(m[i],a) || m[i].cant == -1){
+			// printf("igual\n\n\n");
+			 return true;
+		}
+	}
+//	 printf("distinto\n\n\n");
+	return false;
+}
+
+int posInMatrix(States m[matrixSize], States a){
+	int i;
+	for(i=0; i<matrixSize; i++){
+		 printf("M = ");
+		 printStates(m[i]);
+		 printf("A = ");
+		 printStates(a);
+		if(statesAreEquals(m[i],a)){
+			printf("pos in matrix %d\n", i);
+			return i;
+		}
+	}	
+}
+
+bool statesAreEquals(States a,States b){
+	if(a.cant != b.cant) return false;
+	for(int i=0; i<a.cant; i++){
+		bool isIn = false;
+		for(int j=0; j<b.cant; j++){
+			printf("a = %d- b = %d \n", a.states[i], b.states[j]);
+			if(a.states[i] == b.states[j]){
+				isIn = true;
+				j = b.cant+1;
 			}
 		}
-		i++;
+		if(!isIn){
+		 	printf("Distintos estados\n");
+			return false;
+		
+		}
 	}
-	struct Pair res = {isIn,pos};
-	return res;
+ 	printf("Iguales estados\n");
+	return true;
 }
 
-bool isInMatrix(int m[matrixSize][MAX_STATES], int a[MAX_STATES]){
-	objectIsInMatriz(m,a).first;
-}
 
-int posInMatrix(int m[matrixSize][MAX_STATES], int a[MAX_STATES]){
-	struct Pair p= objectIsInMatriz(m,a);
-	if (p.first)
-	{
-		return p.second;
-	} else {
-		return -1;
+bool haveFinalState(AFN *afn, States state){
+	//printf("cantidad estados encontrados = %d \n", state.cant);
+	for(int i = 0; i < afn->finalStates.cant; i++){
+		for(int j = 0; j < state.cant; j++){
+	//		printf("final = %d, encontrado = %d \n", afn->finalStates.states[i], state.states[j]);
+			if(afn->finalStates.states[i]==state.states[j]){
+				return true;
+			}
+		}
 	}
-	
+	return false;
 }
 
 void addFinal(AFN *afn, AFD *afd, int matrix[matrixSize][MAX_STATES],int cantOfElem){
@@ -229,7 +269,7 @@ void addFinal(AFN *afn, AFD *afd, int matrix[matrixSize][MAX_STATES],int cantOfE
 		for(int t = 0; t < MAX_STATES; t++){
 			for(int i = 0; i < afn->finalStates.cant; i++){
 				if(matrix[h][t] == afn->finalStates.states[i]){
-					memcpy(afd->finalState[h], matrix[h], sizeof(afd->finalState[h]));
+					addStateToStates(&afd->states, h);
 					break;
 				}	
 			}
@@ -237,39 +277,47 @@ void addFinal(AFN *afn, AFD *afd, int matrix[matrixSize][MAX_STATES],int cantOfE
 	}
 }
 
-void addState(int states[MAX_STATES], int matrix[matrixSize][MAX_STATES], int *cantOfElem){
-	int idx = 0;
-	bool validState = false;
-	while(!validState && idx < MAX_STATES){
-			if(states[idx] == -1){
-				idx++;
-			}else{
-				validState = true;
-			}
-		}
-		if(validState){
-			memcpy(matrix[(*cantOfElem)], states, sizeof(int)*MAX_STATES);
+void addState(States states, States matrix[matrixSize], int *cantOfElem){
+	// printf("nex founded %d\n", states.cant);
+	if(states.cant > 0){
+			matrix[(*cantOfElem)] =  states;
 			(*cantOfElem)++;
-		}
+	}
 }
 
-int* closure(int states[MAX_STATES], booleanArray delta[MAX_STATES][ALPHABET_SIZE]){
-	static int statesReached[MAX_STATES];
-	memset(statesReached, -1, sizeof(statesReached));
-	for(int j = 0; j < MAX_STATES; j++){
-		if(states[j] != -1){
-			statesReached[j] = states[j];
-			for(int i = 0; i < MAX_STATES; i++){
-				if(delta[statesReached[j]][0][i]==true){
-					// verifico que al estaod que llego no llego otro estado revisado previamente
-					if(statesReached[i] == -1){ 
-						statesReached[i] = i;
-					}
-				}
-			}
-		}	
+void cancatenateStates(States *state, States newState){
+	for(int i = 0; i <newState.cant; i++){
+		//printStates(*state);
+		//printStates(newState);
+		addStateToStates(state, newState.states[i]);
 	}
-	return statesReached;
+}
+
+States *closure(States states, AFN afn){
+	States *closureState = malloc(sizeof(States));
+	cancatenateStates(closureState, states);
+	int lamdaIndex = getAlphabetIndex(afn.alphabet, 0);
+	int previousCant = 0;
+	//printf("\n\n\n\n ESACA \n");
+	do{
+		previousCant = closureState->cant;
+		States *newState = move(states, 0, afn);
+		cancatenateStates(closureState, *newState);
+
+	}while(previousCant != closureState->cant);
+	//printf("\n\n\n\n");
+	return closureState;
+/*	for(int j = 0; j < states->cant; j++){
+		int departureState = states->states[j];
+		int departueIndex = getStateIndex(afn.states, departureState);
+		for(int i = 0; i < afn.states.cant; i++){
+			if(afn.delta[departueIndex][lamdaIndex][i]==true){
+				int arrivalState = afn.states.states[i];
+				addStateToStates(states, arrivalState);
+			}
+		}
+	}
+*/
 }
 
 //retorna un array con los nodos alcanzados por states, si por ningun valor de state
@@ -277,40 +325,53 @@ int* closure(int states[MAX_STATES], booleanArray delta[MAX_STATES][ALPHABET_SIZ
 //si hay una transicion, entonces retorna el valor del estado al que se llega
 //ejemplo, states = {0,-1,2} (si hay un -1 representa un espacion en blanco el estado seria {0,2})
 //el array retornado seria {0,1,-1} es decir que por el estado {0,2} se llega al estado {0,1-1} ({0,1})
-int* move(int states[MAX_STATES], int alph, booleanArray delta[MAX_STATES][ALPHABET_SIZE]){
-	static int statesReached[MAX_STATES];
-	memset(statesReached, -1, sizeof(statesReached));
-	for(int j = 0; j < MAX_STATES; j++){
-		int k=0;
-		if(states[j] != -1){
-			for(int i = 0; i < MAX_STATES; i++){
-				if(delta[states[j]][alph][i]==true){
-					// verifico que al estaod que llego no llego otro estado revisado previamente
-					if(statesReached[k] == -1){ 
-						statesReached[k] = i;
-					}
-				}else {
-					// verificar si no esta el valor de un estado que pudo ser añadido previemente
-					// realizo estas verificaciones porque voy llenando un array de tamaño MAXSTATES
-					if(statesReached[k] == -1){
-						statesReached[k] = -1;
-					}
-				}
-			k++;
+States *move(States states, int alph, AFN afn){
+	States *statesReached = malloc(sizeof(States));
+	memset(statesReached->states, -1, sizeof(statesReached));
+	int symbolIndex = getAlphabetIndex(afn.alphabet, alph);
+	for(int j = 0; j < states.cant; j++){
+		for(int i = 0; i < afn.states.cant; i++){
+			int departureIndex = getStateIndex(afn.states, states.states[j]);
+			int arrivalState = afn.states.states[i];
+	//		printf("departure state %d i - symbol %d -arrival state %d - transition %d\n", states.states[j], alph, arrivalState, afn.delta[departureIndex][symbolIndex][i]);
+			if(afn.delta[departureIndex][symbolIndex][i]==true){
+				addStateToStates(statesReached, arrivalState);
+			}
 		}
-}
 	}
+	//printf("reached");
+	//printStates(*statesReached);
 	return statesReached;
 }
 
-int* initialClosure(int s, int alph, booleanArray delta[MAX_STATES][ALPHABET_SIZE]){
-	static int arrOfstate[MAX_STATES];
-	for(int i = 1; i < MAX_STATES; i++){
-		if(delta[s][alph][i] == true){
-				arrOfstate[i] = i;
-		}else{
-			arrOfstate[i] = -1;
-		}
+States *initialClosure(int s, AFN afn){
+	States *arrOfstate = malloc(sizeof(States));
+	addStateToStates(arrOfstate, s);
+	return closure(*arrOfstate, afn);
+}
+
+
+void initADF(AFD *afd){
+	memset(afd->finalStates.states,-1,sizeof(afd->finalStates));
+	memset(afd->states.states,-1,sizeof(afd->states));
+	memset(afd->alphabet.alphabet,-1,sizeof(afd->states));
+	afd->states.cant = 0;
+	afd->finalStates.cant = 0;
+	afd->alphabet.cant = 0;
+}
+
+
+void printStates(States s){
+	printf("[");
+	for(int j = 0;j<s.cant; j++){
+		printf("%d,", s.states[j]);
 	}
-	return arrOfstate;
+	printf("]\n");
+}
+
+void pintMAtrix(States matrix[matrixSize], int cant){
+	for(int i = 0;i<cant; i++){
+		States s = matrix[i];
+		printStates(s);
+	}
 }

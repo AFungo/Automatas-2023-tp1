@@ -40,51 +40,95 @@ bool pertence(AFN *automaton, char *chain){
 	return false;		
 }
 
+AFN AFDtoAFN(AFD afd){
+	AFN *afn = malloc(sizeof(AFN));
+	initAutomaton(afn);
+	afn->initialState = afd.initialState;
+	for(int i = 0;i<afd.states.cant; i++){
+//		printf("states: %d\n", afd.states.states[i]);	
+		addStateToAutomaton(afn, afd.states.states[i]);
+	}
+	for(int i = 0;i<afd.alphabet.cant; i++){
+//		printf("alphabet: %d\n", afd.alphabet.alphabet[i]);	
+		addSymbolToAutomaton(afn, afd.alphabet.alphabet[i]);
+	}
+	for(int i = 0;i<afd.finalStates.cant; i++){
+//		printf("finalStates: %d\n", afd.finalStates.states[i]);	
+		addStateToAutomaton(afn, afd.finalStates.states[i]);
+	}
+	for(int i = 0;i<afd.states.cant; i++){
+		for(int j = 0;j<afd.alphabet.cant; j++){
+			printf("state = %d \n", afd.delta[i][j]);
+			int index = getStateIndex(afn->states, afd.delta[i][j]);
+			afn->delta[i][j][index] = true;
+		}
+	}
+	return *afn;
+}
+
+
+
+
 AFD aFNtoAFD(AFN *afn){
-	AFD *afd = malloc(sizeof(AFD));
-	int matrix[matrixSize][MAX_STATES];
+	AFD *afd = malloc(sizeof(AFN));
+	initADF(afd);
+	States matrix[matrixSize];
 	int cantOfElem = 0;
-	int* mover;
 	int  pos;
 	int aux; //verifica si aparecen estados nuevos
-	memset(afd->finalState,-1,sizeof(afd->finalState));
-	memset(afd->states.states,-1,sizeof(afd->states));
-
-	bool validState = false;
-	memset(matrix, -1, sizeof(matrix));
-	int* initialSt = initialClosure(afn->initialState, afn->alphabet.alphabet[0], (afn->delta));
-	memcpy(afd->initialState, initialSt,sizeof(int)*MAX_STATES);
-	addState(initialSt, matrix, &(cantOfElem));
+	States *initialSt = initialClosure(afn->initialState, *afn);
+	afd->initialState = 0;
+	addState(*initialSt, matrix, &(cantOfElem));
+	addStateToStates(&afd->states, cantOfElem-1);
+	// pintMAtrix(matrix, cantOfElem);
+	if(haveFinalState(afn, *initialSt)){
+		addStateToStates(&afd->finalStates, cantOfElem-1);
+	}
 	
-	int longitud = sizeof(initialSt) / sizeof(initialSt[0]);
 	bool statesLeft = true;
-	
+	int i = 0;
 	while(statesLeft){
 		aux = cantOfElem;
-		for(int i = 0; i < cantOfElem; i++){
-			for(int alph = 1; alph < ALPHABET_SIZE; alph++){
-				int* newState;
-				newState = move(matrix[i], alph, afn->delta);
-				newState = closure(newState,afn->delta);	
-				if(!isInMatrix(matrix, newState)){
-					addState(newState, matrix, &(cantOfElem));
+//		printf("cant %d\nmatrix = ", cantOfElem);
+		for(i; i < aux; i++){
+			//printStates(matrix[i]);	
+			for(int alph = 0; alph < afn->alphabet.cant; alph++){
+				States *newState = malloc(sizeof(States));
+				int symbol = afn->alphabet.alphabet[alph];
+				if(symbol != 0)//No es lambda
+					newState = move(matrix[i], symbol, *afn);
+	//			haveFinalState(afn, *newState);
+				newState = closure(*newState, *afn);	
+	//			printf("\n\n\n");
+				// printStates(*newState);
+				if(!isInMatrix(matrix, *newState, cantOfElem)){
+					// printf("ENTRE\n");
+					// pintMAtrix(matrix, cantOfElem);
+					addState(*newState, matrix, &(cantOfElem));
+					addStateToStates(&afd->states, cantOfElem-1);
+					// printf("new state founded: %d\n", cantOfElem);
+					if(haveFinalState(afn, *newState)){
+//						printf("- tiene estado final");
+						addStateToStates(&afd->finalStates, cantOfElem-1);
+					}
+					printf("ACA\n");
+					pos = posInMatrix(matrix, *newState);
+					printf("pos new state = %d - ", pos);
+					printStates(*newState);
+					afd->delta[i][alph] = pos;			
 				}
-				pos = posInMatrix(matrix, newState);
-				afd->delta[i][alph] = pos;			
 			}
 		}
+		i = aux;
 		if(cantOfElem == aux){
 			statesLeft = false;
 		}
 	}
-	for(int k = 0; k < cantOfElem; k++){
-		addStateToStates(&afd->states, k);	
-	}
 	for(int k = 0; k < afn->alphabet.cant; k++){
-		if(k != 0)//el symbolo no es lambda
-			addNewSymbolToAlphabet(&afd->alphabet, k);	
+		if(afn->alphabet.alphabet[k] != 0){//el symbolo no es lambda
+			addNewSymbolToAlphabet(&afd->alphabet, afn->alphabet.alphabet[k]);	
+		}
 	}
-	addFinal(afn, afd, matrix, cantOfElem);
 	return *afd;
 }
 
