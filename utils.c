@@ -69,7 +69,14 @@ void initAutomaton(AFN *automaton){
 	memset(automaton->states.states,-1,sizeof(automaton->states.states));
 	memset(automaton->finalStates.states,-1,sizeof(automaton->finalStates.states));
 	memset(automaton->alphabet.alphabet,-1,sizeof(automaton->alphabet.alphabet));
-	memset(automaton->delta,false,sizeof(automaton->delta));
+	//memset(automaton->delta,0,sizeof(automaton->delta));
+	for(int i = 0;i<MAX_STATES;i++){
+		for(int j = 0; j < ALPHABET_SIZE; j++){
+			for(int k = 0;k<MAX_STATES;k++){
+				automaton->delta[i][j][k] = 0;
+			}
+		}
+	}
 	automaton->states.cant = 0;
 	automaton->finalStates.cant = 0;
 	automaton->alphabet.cant = 0;
@@ -218,12 +225,12 @@ bool isInMatrix(States m[matrixSize], States a, int matrizSize){
 int posInMatrix(States m[matrixSize], States a){
 	int i;
 	for(i=0; i<matrixSize; i++){
-		 printf("M = ");
-		 printStates(m[i]);
-		 printf("A = ");
-		 printStates(a);
+	//	 printf("M = ");
+	//	 printStates(m[i]);
+	//	 printf("A = ");
+	//	 printStates(a);
 		if(statesAreEquals(m[i],a)){
-			printf("pos in matrix %d\n", i);
+	//		printf("pos in matrix %d\n", i);
 			return i;
 		}
 	}	
@@ -234,19 +241,19 @@ bool statesAreEquals(States a,States b){
 	for(int i=0; i<a.cant; i++){
 		bool isIn = false;
 		for(int j=0; j<b.cant; j++){
-			printf("a = %d- b = %d \n", a.states[i], b.states[j]);
+	//		printf("a = %d- b = %d \n", a.states[i], b.states[j]);
 			if(a.states[i] == b.states[j]){
 				isIn = true;
 				j = b.cant+1;
 			}
 		}
 		if(!isIn){
-		 	printf("Distintos estados\n");
+//		 	printf("Distintos estados\n");
 			return false;
 		
 		}
 	}
- 	printf("Iguales estados\n");
+ //	printf("Iguales estados\n");
 	return true;
 }
 
@@ -255,7 +262,7 @@ bool haveFinalState(AFN *afn, States state){
 	//printf("cantidad estados encontrados = %d \n", state.cant);
 	for(int i = 0; i < afn->finalStates.cant; i++){
 		for(int j = 0; j < state.cant; j++){
-	//		printf("final = %d, encontrado = %d \n", afn->finalStates.states[i], state.states[j]);
+		//	printf("final = %d, encontrado = %d condicion = %d\n", afn->finalStates.states[i], state.states[j], afn->finalStates.states[i]==state.states[j]);
 			if(afn->finalStates.states[i]==state.states[j]){
 				return true;
 			}
@@ -279,7 +286,7 @@ void addFinal(AFN *afn, AFD *afd, int matrix[matrixSize][MAX_STATES],int cantOfE
 
 void addState(States states, States matrix[matrixSize], int *cantOfElem){
 	// printf("nex founded %d\n", states.cant);
-	if(states.cant > 0){
+	if(states.cant > 0 && !isInMatrix(matrix, states, *cantOfElem)){
 			matrix[(*cantOfElem)] =  states;
 			(*cantOfElem)++;
 	}
@@ -295,15 +302,17 @@ void cancatenateStates(States *state, States newState){
 
 States *closure(States states, AFN afn){
 	States *closureState = malloc(sizeof(States));
+	printStates(*closureState);
 	cancatenateStates(closureState, states);
+	printStates(*closureState);
 	int lamdaIndex = getAlphabetIndex(afn.alphabet, 0);
 	int previousCant = 0;
 	//printf("\n\n\n\n ESACA \n");
 	do{
 		previousCant = closureState->cant;
-		States *newState = move(states, 0, afn);
-		cancatenateStates(closureState, *newState);
+		States *newState = move(*closureState, 0, afn);
 
+		cancatenateStates(closureState, *newState);
 	}while(previousCant != closureState->cant);
 	//printf("\n\n\n\n");
 	return closureState;
@@ -329,18 +338,16 @@ States *move(States states, int alph, AFN afn){
 	States *statesReached = malloc(sizeof(States));
 	memset(statesReached->states, -1, sizeof(statesReached));
 	int symbolIndex = getAlphabetIndex(afn.alphabet, alph);
+	if(symbolIndex == -1) return statesReached;
 	for(int j = 0; j < states.cant; j++){
 		for(int i = 0; i < afn.states.cant; i++){
 			int departureIndex = getStateIndex(afn.states, states.states[j]);
 			int arrivalState = afn.states.states[i];
-	//		printf("departure state %d i - symbol %d -arrival state %d - transition %d\n", states.states[j], alph, arrivalState, afn.delta[departureIndex][symbolIndex][i]);
 			if(afn.delta[departureIndex][symbolIndex][i]==true){
 				addStateToStates(statesReached, arrivalState);
 			}
 		}
 	}
-	//printf("reached");
-	//printStates(*statesReached);
 	return statesReached;
 }
 
@@ -351,13 +358,18 @@ States *initialClosure(int s, AFN afn){
 }
 
 
-void initADF(AFD *afd){
+void initAFD(AFD *afd){
 	memset(afd->finalStates.states,-1,sizeof(afd->finalStates));
 	memset(afd->states.states,-1,sizeof(afd->states));
 	memset(afd->alphabet.alphabet,-1,sizeof(afd->states));
 	afd->states.cant = 0;
 	afd->finalStates.cant = 0;
 	afd->alphabet.cant = 0;
+	for(int i = 0; i < MAX_STATES; i++){
+		for(int j = 0; j < ALPHABET_SIZE; j++){
+			afd->delta[i][j] = -1;
+		}	
+	}
 }
 
 
@@ -374,4 +386,23 @@ void pintMAtrix(States matrix[matrixSize], int cant){
 		States s = matrix[i];
 		printStates(s);
 	}
+}
+
+void addNewDeltaToAFD(int departure, int arrival, int symbol, AFD *afd){
+	printf("AGREGUE UN DELTA BRO\n");
+	int departureIndex = getStateIndex(afd->states, departure);
+	int symbolIndex = getAlphabetIndex(afd->alphabet, symbol);
+	afd->delta[departureIndex][symbolIndex] = arrival;
+}
+
+void addNewFinalStateToAFD(AFD *afd, int state){
+	addStateToStates(&afd->finalStates, state);
+}
+
+void addStateToAFD(AFD *afd, int state){
+	addStateToStates(&afd->states, state);
+}
+
+void addInitialStateToAFD(AFD *afd, int state){
+	afd->initialState = state;
 }

@@ -53,12 +53,12 @@ AFN AFDtoAFN(AFD afd){
 		addSymbolToAutomaton(afn, afd.alphabet.alphabet[i]);
 	}
 	for(int i = 0;i<afd.finalStates.cant; i++){
-//		printf("finalStates: %d\n", afd.finalStates.states[i]);	
-		addStateToAutomaton(afn, afd.finalStates.states[i]);
+		//printf("finalStates: %d\n", afd.finalStates.states[i]);	
+		addNewFinalStateToAutomaton(afn, afd.finalStates.states[i]);
 	}
 	for(int i = 0;i<afd.states.cant; i++){
 		for(int j = 0;j<afd.alphabet.cant; j++){
-			printf("state = %d \n", afd.delta[i][j]);
+		//	printf("state = %d \n", afd.delta[i][j]);
 			int index = getStateIndex(afn->states, afd.delta[i][j]);
 			afn->delta[i][j][index] = true;
 		}
@@ -71,63 +71,42 @@ AFN AFDtoAFN(AFD afd){
 
 AFD aFNtoAFD(AFN *afn){
 	AFD *afd = malloc(sizeof(AFN));
-	initADF(afd);
+	initAFD(afd);
+	for(int k = 0; k < afn->alphabet.cant; k++){
+		if(afn->alphabet.alphabet[k] != 0){//el symbolo no es lambda
+			addNewSymbolToAlphabet(&afd->alphabet, afn->alphabet.alphabet[k]);	
+		}
+	}
 	States matrix[matrixSize];
 	int cantOfElem = 0;
 	int  pos;
 	int aux; //verifica si aparecen estados nuevos
 	States *initialSt = initialClosure(afn->initialState, *afn);
-	afd->initialState = 0;
+	addInitialStateToAFD(afd, 0);
 	addState(*initialSt, matrix, &(cantOfElem));
-	addStateToStates(&afd->states, cantOfElem-1);
-	// pintMAtrix(matrix, cantOfElem);
-	if(haveFinalState(afn, *initialSt)){
-		addStateToStates(&afd->finalStates, cantOfElem-1);
-	}
-	
-	bool statesLeft = true;
+	addStateToAFD(afd, cantOfElem-1);
+	if(haveFinalState(afn, *initialSt)) addStateToStates(&afd->finalStates, cantOfElem-1);
 	int i = 0;
-	while(statesLeft){
+	while(aux!=cantOfElem){
 		aux = cantOfElem;
-//		printf("cant %d\nmatrix = ", cantOfElem);
 		for(i; i < aux; i++){
-			//printStates(matrix[i]);	
 			for(int alph = 0; alph < afn->alphabet.cant; alph++){
 				States *newState = malloc(sizeof(States));
 				int symbol = afn->alphabet.alphabet[alph];
-				if(symbol != 0)//No es lambda
+				if(symbol != 0){//No es lambda
 					newState = move(matrix[i], symbol, *afn);
-	//			haveFinalState(afn, *newState);
-				newState = closure(*newState, *afn);	
-	//			printf("\n\n\n");
-				// printStates(*newState);
-				if(!isInMatrix(matrix, *newState, cantOfElem)){
-					// printf("ENTRE\n");
-					// pintMAtrix(matrix, cantOfElem);
-					addState(*newState, matrix, &(cantOfElem));
-					addStateToStates(&afd->states, cantOfElem-1);
-					// printf("new state founded: %d\n", cantOfElem);
-					if(haveFinalState(afn, *newState)){
-//						printf("- tiene estado final");
-						addStateToStates(&afd->finalStates, cantOfElem-1);
+					newState = closure(*newState, *afn);
+					if(newState->cant>0){
+						addState(*newState, matrix, &(cantOfElem));
+						int newStateIndex = posInMatrix(matrix, *newState);
+						addStateToStates(&afd->states, newStateIndex);
+						if(haveFinalState(afn, *newState)) addNewFinalStateToAFD(afd, newStateIndex);
+						addNewDeltaToAFD(getStateIndex(afd->states, i), newStateIndex, symbol, afd);
 					}
-					printf("ACA\n");
-					pos = posInMatrix(matrix, *newState);
-					printf("pos new state = %d - ", pos);
-					printStates(*newState);
-					afd->delta[i][alph] = pos;			
-				}
+				}	
 			}
 		}
 		i = aux;
-		if(cantOfElem == aux){
-			statesLeft = false;
-		}
-	}
-	for(int k = 0; k < afn->alphabet.cant; k++){
-		if(afn->alphabet.alphabet[k] != 0){//el symbolo no es lambda
-			addNewSymbolToAlphabet(&afd->alphabet, afn->alphabet.alphabet[k]);	
-		}
 	}
 	return *afd;
 }
@@ -215,7 +194,7 @@ void writeAutomaton(char *fileName, AFN automaton){
 					int arrival = automaton.states.states[k];
 					int symbol = automaton.alphabet.alphabet[j];
 					if(symbol == 0) fprintf(file, "q%d->q%d [label:\"!\"];\n", departure, arrival);
-					else fprintf(file, "q%d->q%d [label:\"%d\"];\n", departure, arrival, symbol);
+					else fprintf(file, "q%d->q%d [label=\"%d\"];\n", departure, arrival, symbol);
                 }
             }
         }

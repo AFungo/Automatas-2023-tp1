@@ -32,8 +32,12 @@ States *move(States states, int alph, AFN afn);
 States *initialClosure(int s, AFN afn);
 void addStateToStates(States *states, int state);
 bool haveFinalState(AFN *afn, States state);
-void initADF(AFD *afd);
+void initAFD(AFD *afd);
 void printStates(States s);
 void pintMAtrix(States matrix[matrixSize], int cant);
 void cancatenateStates(States *state, States newState);
+void addNewDeltaToAFD(int departure, int arrival, int symbol, AFD *afd);
+void addNewFinalStateToAFD(AFD *afd, int state);
+void addStateToAFD(AFD *afd, int state);
+void addInitialStateToAFD(AFD *afd, int satate);
 #endif
