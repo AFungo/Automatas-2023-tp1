@@ -1,10 +1,11 @@
-#include "afnd.h"
+#include "../models/automatonAlgorithms.h"
+#include "../models/noDeterministicAutomaton.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <assert.h>
-#include "utils.h"
+#include "../utils/utils.h"
 
 bool test1 (AFN *a){
 	char string[] = "1001011";
