@@ -7,6 +7,7 @@
 #include <math.h>
 #include "noDeterministicAutomaton.h"
 #include "../utils/utils.h"
+#include "../utils/partitions.h"
 
 bool pertence(AFN *automaton, char *chain){
 	bool pA= true;//pertenceAlph(t->alphabet,chain);
@@ -189,7 +190,7 @@ void writeAutomaton(char *fileName, AFN automaton){
 					int departure = automaton.states.states[i];
 					int arrival = automaton.states.states[k];
 					int symbol = automaton.alphabet.alphabet[j];
-					if(symbol == 0) fprintf(file, "q%d->q%d [label:\"!\"];\n", departure, arrival);
+					if(symbol == 0) fprintf(file, "q%d->q%d [label=\"!\"];\n", departure, arrival);
 					else fprintf(file, "q%d->q%d [label=\"%d\"];\n", departure, arrival, symbol);
                 }
             }
@@ -202,3 +203,150 @@ void writeAutomaton(char *fileName, AFN automaton){
     fprintf(file, "}\n");
     fclose(file);
 }
+
+
+
+
+AFN *automatonUnion(AFN a, AFN b){
+	AFN *automaton = malloc(sizeof(AFN));
+	int stateNumber = 0;
+	addStateToAutomaton(automaton, stateNumber);
+	addInitialStateToAutomaton(automaton, stateNumber);
+	stateNumber++;
+	int automatonStatesIndex[MAX_STATES];
+	
+	addSymbolToAutomaton(automaton, 0);//ad lambda
+	appendSymbolsToAFD(automaton, a);
+	appendStatesToAFD(automaton, a, automatonStatesIndex, &stateNumber);
+	int initialStateIndex = getStateIndex(a.states, a.initialState);
+	addNewDeltaToAutomaton(automaton, 0, automatonStatesIndex[initialStateIndex], 0);
+	appendDeltaToAFD(automaton, a, automatonStatesIndex);
+	appendFinalStatesToAFD(automaton, a, automatonStatesIndex);
+
+
+	int automatonBStatesIndex[MAX_STATES];
+	appendSymbolsToAFD(automaton, b);
+	appendStatesToAFD(automaton, b, automatonBStatesIndex, &stateNumber);
+	int bInitialStateIndex = getStateIndex(b.states, b.initialState);
+	addNewDeltaToAutomaton(automaton, 0, automatonBStatesIndex[bInitialStateIndex], 0);
+	appendDeltaToAFD(automaton, b, automatonBStatesIndex);
+	appendFinalStatesToAFD(automaton, b, automatonBStatesIndex);
+
+	return automaton;
+}
+
+AFN *automatonConcatenacion(AFN a, AFN b){
+	AFN *automaton = malloc(sizeof(AFN));
+	int stateNumber = 0;
+	addSymbolToAutomaton(automaton, 0);//ad lambda
+	int automatonStatesIndex[MAX_STATES];
+	int automatonBStatesIndex[MAX_STATES];
+	appendSymbolsToAFD(automaton, a);
+	appendStatesToAFD(automaton, a, automatonStatesIndex, &stateNumber);
+	appendDeltaToAFD(automaton, a, automatonStatesIndex);
+	appendSymbolsToAFD(automaton, b);
+	appendStatesToAFD(automaton, b, automatonBStatesIndex, &stateNumber);
+	appendDeltaToAFD(automaton, b, automatonBStatesIndex);
+	appendFinalStatesToAFD(automaton, b, automatonBStatesIndex);
+
+	States aFinalsStates = getAFDFinalStates(a);
+	int bInitialStateIndex = getStateIndex(b.states, b.initialState);
+	for(int i = 0; i < aFinalsStates.cant; i++){
+		int finalStateIndex = getStateIndex(a.states, aFinalsStates.states[i]);
+		addNewDeltaToAutomaton(automaton, automatonStatesIndex[finalStateIndex], automatonBStatesIndex[bInitialStateIndex], 0);
+	}	
+	return automaton;
+}
+
+AFN *automatonKlenneClausure(AFN a){
+	AFN *automaton = malloc(sizeof(AFN));
+	int stateNumber = 0;
+	addSymbolToAutomaton(automaton, 0);
+	int automatonStatesIndex[MAX_STATES];
+	addStateToAutomaton(automaton, stateNumber);
+	addInitialStateToAutomaton(automaton, stateNumber);
+	stateNumber++;
+	
+	appendSymbolsToAFD(automaton, a);
+	appendStatesToAFD(automaton, a, automatonStatesIndex, &stateNumber);
+	appendDeltaToAFD(automaton, a, automatonStatesIndex);
+
+	addStateToAutomaton(automaton, stateNumber);
+	addNewFinalStateToAutomaton(automaton, stateNumber);
+	int finalState = stateNumber;
+	stateNumber++;
+
+	int initialStateIndex = getStateIndex(a.states, a.initialState);
+	addNewDeltaToAutomaton(automaton, 0, automatonStatesIndex[initialStateIndex], 0);
+	addNewDeltaToAutomaton(automaton, automaton->initialState, finalState, 0);
+	addNewDeltaToAutomaton(automaton, finalState, automaton->initialState, 0);
+
+	States aFinalsStates = getAFDFinalStates(a);
+	for(int i = 0; i < aFinalsStates.cant; i++){
+		int finalStateIndex = getStateIndex(a.states, aFinalsStates.states[i]);
+		addNewDeltaToAutomaton(automaton, automatonStatesIndex[finalStateIndex], finalState, 0);
+	}	
+	return automaton;	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+States *kIndistinguibilidad(AFD afd){
+/*	Partitions *partitions = malloc(sizeof(Partitions));
+	States *newPartition = malloc(sizeof(States));
+	cancatenateStates(newPartition, afd.states);
+	removeStates(newPartition, afd.finalStates);
+	addPartition(partitions, *newPartition);
+	addPartition(partitions, afd.finalStates);
+	bool changePartition = false;
+
+	while(!changePartition){
+		for(int i = 0; i < partitions->cant; i++){
+			printf("PASEEEE%d\n", i);
+			Partitions *newPartitions = malloc(sizeof(Partitions));
+			States partition = partitions->partitions[i];
+			for(int j = 0; j < partition.cant; j++){
+				free(newPartition);
+				newPartition = malloc(sizeof(States));
+				int markedState = partition.states[j];
+				addStateToStates(newPartition, markedState);
+				for(int k = 0; k < partition.cant; k++){
+					int unMarkedState = partition.states[k];
+					if(equivalenceClassAreEquals(afd, markedState, unMarkedState, *partitions)){
+						addStateToStates(newPartition, unMarkedState);
+					}
+				}
+				addPartition(newPartitions, *newPartition);
+			}
+			if(!partitionsAreEquals(*partitions, *newPartitions)){
+				printf("PASEEEE%d\n", i);
+				free(partitions);
+				printf("PASEEEE%d\n", i);
+				*partitions = *newPartitions;
+				printf("PASEEEE%d\n", i);
+//				free(newPartitions);
+				printf("PASEEEE%d\n", i);
+			}else{
+				changePartition = true;
+			}
+		}
+	}
+	partitionToString(*partitions);
+//	partitionToString(*newPartitions);
+*/}

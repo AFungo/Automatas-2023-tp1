@@ -118,8 +118,45 @@ bool isFinalState(AFN automaton, int s){
 	return false;
 }
 
+void appendSymbolsToAFD(AFN *automaton, AFN b){
+	for(int symbolIndex = 0; symbolIndex < b.alphabet.cant; symbolIndex++){
+		addSymbolToAutomaton(automaton, b.alphabet.alphabet[symbolIndex]);		
+	}	
+}	
 	
-	
+void appendStatesToAFD(AFN *automaton, AFN b, int statesIndex[MAX_STATES], int *stateNumber){
+	for(int stateIndex = 0; stateIndex < b.states.cant; stateIndex++){
+		addStateToAutomaton(automaton, *stateNumber);
+		statesIndex[stateIndex] = *stateNumber;
+		(*stateNumber)++;
+	}
+}
 
+void appendDeltaToAFD(AFN *automaton, AFN b, int statesIndex[MAX_STATES]){
+	for(int departureIndex = 0; departureIndex < b.states.cant; departureIndex++){
+		for(int symbolIndex = 0; symbolIndex < b.alphabet.cant; symbolIndex++){
+			for(int arrivalIndex = 0; arrivalIndex < b.states.cant; arrivalIndex++){
+				if(b.delta[departureIndex][symbolIndex][arrivalIndex] == true){
+					int symbol = b.alphabet.alphabet[symbolIndex];
+					addNewDeltaToAutomaton(automaton, statesIndex[departureIndex], statesIndex[arrivalIndex], symbol);
+				}	
+			}
+		}
+	}	
+}
 
+void appendFinalStatesToAFD(AFN *automaton, AFN b, int statesIndex[MAX_STATES]){
+	for(int i = 0; i < b.finalStates.cant; i++){
+		int finalStateIndex = getStateIndex(b.states, b.finalStates.states[i]);
+		int finalState = statesIndex[finalStateIndex];
+		addNewFinalStateToAutomaton(automaton, finalState);
+	}	
+}
 
+States getAFDFinalStates(AFN automaton){
+	States *finalStates = malloc(sizeof(States));
+	for(int i = 0; i < automaton.finalStates.cant; i++){
+		addStateToStates(finalStates, automaton.finalStates.states[i]);
+	}
+	return *finalStates;
+}
