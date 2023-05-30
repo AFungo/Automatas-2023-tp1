@@ -12,4 +12,4 @@ gcc -o test6 test/testAFNDTOAFD.c utils/alphabetUtils.c models/automatonAlgorith
 ./test5
 ./test6
 
-rm test*
+ls | grep -e "test[0-9]" | xargs rm
