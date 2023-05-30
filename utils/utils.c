@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "utils.h"
-
+#include "partitions.h"
 
 bool isInMatrix(States m[matrixSize], States a, int matrizSize){
 	for(int i=0; i<matrizSize; i++){
@@ -98,4 +98,27 @@ void pintMAtrix(States matrix[matrixSize], int cant){
 		printStates(s);
 	}
 }
+
+
+bool equivalenceClassAreEquals(AFD afd, int markedState, int unMarkedState, Partitions partitions){
+/*	int markedStateIndex = getStateIndex(afd.states, markedState);
+	int unMarkedStateIndex = getStateIndex(afd.states, unMarkedState);
+	bool equivalenceClassesEquals = true;
+	for(int i = 0; i < afd.alphabet.cant; i++){
+		int symbol = afd.alphabet.alphabet[i];
+		int markedArriveState = afd.delta[markedStateIndex][i];
+		int unMarkedArriveState = afd.delta[unMarkedStateIndex][i];
+		if(markedArriveState != unMarkedArriveState){
+			int markedStatePartitionIndex = getPartitionIndexOfState(partitions, markedArriveState);
+			int unMarkedStatePartitionIndex = getPartitionIndexOfState(partitions, unMarkedArriveState);
+			if(markedStatePartitionIndex != unMarkedStatePartitionIndex) return false;
+		}
+	}
+	return true;
+*/}
+
+
+
+
+
 

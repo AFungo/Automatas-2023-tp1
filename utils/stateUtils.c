@@ -6,16 +6,18 @@
 #include <stdbool.h>
 #include "stateUtils.h"
 
-void addStateToStates(States *states, int state){
-	bool isNewState = true;
-	int i = 0;
-	for(i = 0; i < states->cant; i++){
-		if(states->states[i] == state){
-			isNewState = false;
+bool contains(States states, int state){
+	for(int i = 0; i < states.cant; i++){
+		if(states.states[i] == state){
+			return true;
 		}
 	}
-	if(isNewState){
-		states->states[i] = state;
+	return false;	
+}
+
+void addStateToStates(States *states, int state){
+	if(!contains(*states, state)){
+		states->states[states->cant] = state;
 		states->cant++;
 	}
 }
@@ -48,6 +50,16 @@ void cancatenateStates(States *state, States newState){
 	for(int i = 0; i <newState.cant; i++){
 		addStateToStates(state, newState.states[i]);
 	}
+}
+
+void removeStates(States *state, States remove){
+	States *newState = malloc(sizeof(States));
+	for(int i = 0; i < state->cant; i++){
+		if(!contains(remove, state->states[i])){
+			addStateToStates(newState, state->states[i]);
+		}
+	}
+	*state = *newState;
 }
 
 void printStates(States s){

@@ -2,6 +2,7 @@
 #define UTILS_h
 #include "../models/noDeterministicAutomaton.h"
 #include "../models/deterministicAutomaton.h"
+#include "partitions.h"
 #define matrixSize (1 << MAX_STATES) -1
 
 struct Pair {
@@ -18,6 +19,7 @@ States *closure(States states, AFN afn);
 States *move(States states, int alph, AFN afn);
 States *initialClosure(int s, AFN afn);
 bool haveFinalState(AFN *afn, States state);
+bool equivalenceClassAreEquals(AFD afd, int markedState, int unMarkedState, Partitions partitions);
 void pintMAtrix(States matrix[matrixSize], int cant);
 
 
