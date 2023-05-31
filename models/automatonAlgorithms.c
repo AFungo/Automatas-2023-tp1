@@ -208,29 +208,38 @@ void writeAutomaton(char *fileName, AFN automaton){
 
 
 AFN *automatonUnion(AFN a, AFN b){
+
 	AFN *automaton = malloc(sizeof(AFN));
 	int stateNumber = 0;
+	//add initial state to automaton
 	addStateToAutomaton(automaton, stateNumber);
 	addInitialStateToAutomaton(automaton, stateNumber);
 	stateNumber++;
 	int automatonStatesIndex[MAX_STATES];
 	
 	addSymbolToAutomaton(automaton, 0);//ad lambda
+	
+	//append a to the new automaton
 	appendSymbolsToAFD(automaton, a);
 	appendStatesToAFD(automaton, a, automatonStatesIndex, &stateNumber);
-	int initialStateIndex = getStateIndex(a.states, a.initialState);
-	addNewDeltaToAutomaton(automaton, 0, automatonStatesIndex[initialStateIndex], 0);
 	appendDeltaToAFD(automaton, a, automatonStatesIndex);
 	appendFinalStatesToAFD(automaton, a, automatonStatesIndex);
 
+	//add transition by lambda between initial states of the new automaton and initial state of a
+	int initialStateIndex = getStateIndex(a.states, a.initialState);
+	addNewDeltaToAutomaton(automaton, 0, automatonStatesIndex[initialStateIndex], 0);
 
 	int automatonBStatesIndex[MAX_STATES];
+
+	//append b to the new automaton
 	appendSymbolsToAFD(automaton, b);
 	appendStatesToAFD(automaton, b, automatonBStatesIndex, &stateNumber);
-	int bInitialStateIndex = getStateIndex(b.states, b.initialState);
-	addNewDeltaToAutomaton(automaton, 0, automatonBStatesIndex[bInitialStateIndex], 0);
 	appendDeltaToAFD(automaton, b, automatonBStatesIndex);
 	appendFinalStatesToAFD(automaton, b, automatonBStatesIndex);
+
+	//add transition by lambda between initial states of the new automaton and initial state of b
+	int bInitialStateIndex = getStateIndex(b.states, b.initialState);
+	addNewDeltaToAutomaton(automaton, 0, automatonBStatesIndex[bInitialStateIndex], 0);
 
 	return automaton;
 }
@@ -241,14 +250,19 @@ AFN *automatonConcatenacion(AFN a, AFN b){
 	addSymbolToAutomaton(automaton, 0);//ad lambda
 	int automatonStatesIndex[MAX_STATES];
 	int automatonBStatesIndex[MAX_STATES];
+
+	//append a to the new automaton but dont add final states
 	appendSymbolsToAFD(automaton, a);
 	appendStatesToAFD(automaton, a, automatonStatesIndex, &stateNumber);
 	appendDeltaToAFD(automaton, a, automatonStatesIndex);
+
+	//append b to the new automaton
 	appendSymbolsToAFD(automaton, b);
 	appendStatesToAFD(automaton, b, automatonBStatesIndex, &stateNumber);
 	appendDeltaToAFD(automaton, b, automatonBStatesIndex);
 	appendFinalStatesToAFD(automaton, b, automatonBStatesIndex);
 
+	//add transition between final states of a and initial state of b
 	States aFinalsStates = getAFDFinalStates(a);
 	int bInitialStateIndex = getStateIndex(b.states, b.initialState);
 	for(int i = 0; i < aFinalsStates.cant; i++){
@@ -263,24 +277,29 @@ AFN *automatonKlenneClausure(AFN a){
 	int stateNumber = 0;
 	addSymbolToAutomaton(automaton, 0);
 	int automatonStatesIndex[MAX_STATES];
+	//add initial state to new automaton
 	addStateToAutomaton(automaton, stateNumber);
 	addInitialStateToAutomaton(automaton, stateNumber);
 	stateNumber++;
-	
+
+
+	//append a to the new automaton but dont add final states		
 	appendSymbolsToAFD(automaton, a);
 	appendStatesToAFD(automaton, a, automatonStatesIndex, &stateNumber);
 	appendDeltaToAFD(automaton, a, automatonStatesIndex);
 
+	//add new final state to automaton
 	addStateToAutomaton(automaton, stateNumber);
 	addNewFinalStateToAutomaton(automaton, stateNumber);
 	int finalState = stateNumber;
 	stateNumber++;
 
 	int initialStateIndex = getStateIndex(a.states, a.initialState);
-	addNewDeltaToAutomaton(automaton, 0, automatonStatesIndex[initialStateIndex], 0);
-	addNewDeltaToAutomaton(automaton, automaton->initialState, finalState, 0);
-	addNewDeltaToAutomaton(automaton, finalState, automaton->initialState, 0);
+	addNewDeltaToAutomaton(automaton, 0, automatonStatesIndex[initialStateIndex], 0);//add trasition by lambda between initial state and initial state of a
+	addNewDeltaToAutomaton(automaton, automaton->initialState, finalState, 0);//add trasition by lambda between initial state and final state
+	addNewDeltaToAutomaton(automaton, finalState, automaton->initialState, 0);//add trasition by lambda between final state and initial state
 
+	//add trasition by lambda between final states of a and final state
 	States aFinalsStates = getAFDFinalStates(a);
 	for(int i = 0; i < aFinalsStates.cant; i++){
 		int finalStateIndex = getStateIndex(a.states, aFinalsStates.states[i]);
