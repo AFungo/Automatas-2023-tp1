@@ -34,7 +34,7 @@ void addPartition(Partitions *partitions, States newPartition){
 int getPartitionIndexOfState(Partitions partitions, int state){
 	for(int i = 0; i < partitions.cant; i++){
 		int index = getStateIndex(partitions.partitions[i], state);
-		if(index != -1) return index;
+		if(index != -1) return i;
 	}
 	return -1;
 }
