@@ -25,9 +25,9 @@ void addStateToAutomaton(AFN *automaton, int state);
 void addNewDeltaToAutomaton(AFN *automaton, int departure, int arrival, int symbol);
 void addNewFinalStateToAutomaton(AFN *automaton, int state);
 bool isFinalState(AFN automaton, int s);
-void appendSymbolsToAFD(AFN *automaton, AFN b);
-void appendStatesToAFD(AFN *automaton, AFN b, int statesIndex[MAX_STATES], int *stateNumber);
-void appendDeltaToAFD(AFN *automaton, AFN b, int statesIndex[MAX_STATES]);
-void appendFinalStatesToAFD(AFN *automaton, AFN b, int statesIndex[MAX_STATES]);
-States getAFDFinalStates(AFN automaton);
+void appendSymbolsToAFN(AFN *automaton, AFN b);
+void appendStatesToAFN(AFN *automaton, AFN b, int statesIndex[MAX_STATES], int *stateNumber);
+void appendDeltaToAFN(AFN *automaton, AFN b, int statesIndex[MAX_STATES]);
+void appendFinalStatesToAFN(AFN *automaton, AFN b, int statesIndex[MAX_STATES]);
+States getAFNFinalStates(AFN automaton);
 #endif

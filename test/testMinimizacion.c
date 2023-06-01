@@ -7,9 +7,12 @@ int main(){
     AFN automaton = readAutomaton("test/automatons/automatonTestMinimizacion.dot");
 	//automatonToString(automaton);
     AFD afd = aFNtoAFD(&automaton);
-	automatonToString(AFDtoAFN(afd));
-	kIndistinguibilidad(afd);
+//	writeAutomaton("automataTranformado.dot", AFDtoAFN((afd)));
+	AFD *minimizado = minimization(afd);
+	automaton = AFDtoAFN(*minimizado);
+	automatonToString(automaton);
+	writeAutomaton("test_automataMinimizado.dot", automaton);
+	// kIndistinguibilidad(afd);
 
-	//writeAutomaton("test_automataMinimizado.dot", AFDtoAFN(afd));
 	    printf("\n**********************************************\n\n");
 }

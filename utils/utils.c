@@ -101,7 +101,7 @@ void pintMAtrix(States matrix[matrixSize], int cant){
 
 
 bool equivalenceClassAreEquals(AFD afd, int markedState, int unMarkedState, Partitions partitions){
-/*	int markedStateIndex = getStateIndex(afd.states, markedState);
+	int markedStateIndex = getStateIndex(afd.states, markedState);
 	int unMarkedStateIndex = getStateIndex(afd.states, unMarkedState);
 	bool equivalenceClassesEquals = true;
 	for(int i = 0; i < afd.alphabet.cant; i++){
@@ -115,7 +115,7 @@ bool equivalenceClassAreEquals(AFD afd, int markedState, int unMarkedState, Part
 		}
 	}
 	return true;
-*/}
+}
 
 
 

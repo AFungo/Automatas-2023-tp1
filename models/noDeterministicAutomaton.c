@@ -20,6 +20,7 @@ void automatonToString(AFN automaton){
     }
 
 	printf("\nAlphabet = ");
+
  	for(int i = 0; i<automaton.alphabet.cant;i++){
      	int symbol = automaton.alphabet.alphabet[i];
      	if(automaton.alphabet.alphabet[i] == 0) printf("!");	
@@ -118,13 +119,13 @@ bool isFinalState(AFN automaton, int s){
 	return false;
 }
 
-void appendSymbolsToAFD(AFN *automaton, AFN b){
+void appendSymbolsToAFN(AFN *automaton, AFN b){
 	for(int symbolIndex = 0; symbolIndex < b.alphabet.cant; symbolIndex++){
 		addSymbolToAutomaton(automaton, b.alphabet.alphabet[symbolIndex]);		
 	}	
 }	
 	
-void appendStatesToAFD(AFN *automaton, AFN b, int statesIndex[MAX_STATES], int *stateNumber){
+void appendStatesToAFN(AFN *automaton, AFN b, int statesIndex[MAX_STATES], int *stateNumber){
 	for(int stateIndex = 0; stateIndex < b.states.cant; stateIndex++){
 		addStateToAutomaton(automaton, *stateNumber);
 		statesIndex[stateIndex] = *stateNumber;
@@ -132,7 +133,7 @@ void appendStatesToAFD(AFN *automaton, AFN b, int statesIndex[MAX_STATES], int *
 	}
 }
 
-void appendDeltaToAFD(AFN *automaton, AFN b, int statesIndex[MAX_STATES]){
+void appendDeltaToAFN(AFN *automaton, AFN b, int statesIndex[MAX_STATES]){
 	for(int departureIndex = 0; departureIndex < b.states.cant; departureIndex++){
 		for(int symbolIndex = 0; symbolIndex < b.alphabet.cant; symbolIndex++){
 			for(int arrivalIndex = 0; arrivalIndex < b.states.cant; arrivalIndex++){
@@ -145,7 +146,7 @@ void appendDeltaToAFD(AFN *automaton, AFN b, int statesIndex[MAX_STATES]){
 	}	
 }
 
-void appendFinalStatesToAFD(AFN *automaton, AFN b, int statesIndex[MAX_STATES]){
+void appendFinalStatesToAFN(AFN *automaton, AFN b, int statesIndex[MAX_STATES]){
 	for(int i = 0; i < b.finalStates.cant; i++){
 		int finalStateIndex = getStateIndex(b.states, b.finalStates.states[i]);
 		int finalState = statesIndex[finalStateIndex];
@@ -153,7 +154,7 @@ void appendFinalStatesToAFD(AFN *automaton, AFN b, int statesIndex[MAX_STATES]){
 	}	
 }
 
-States getAFDFinalStates(AFN automaton){
+States getAFNFinalStates(AFN automaton){
 	States *finalStates = malloc(sizeof(States));
 	for(int i = 0; i < automaton.finalStates.cant; i++){
 		addStateToStates(finalStates, automaton.finalStates.states[i]);
