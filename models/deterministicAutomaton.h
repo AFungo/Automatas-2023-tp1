@@ -18,4 +18,4 @@ void addNewFinalStateToAFD(AFD *afd, int state);
 void addStateToAFD(AFD *afd, int state);
 void addInitialStateToAFD(AFD *afd, int satate);
 
-#endif
+#endif	

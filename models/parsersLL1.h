@@ -17,9 +17,19 @@ typedef struct{
 
 }GramaticLL1;
 
-
-bool parserDecendenteRecursivo(GramaticLL1Production *gramaticProductions, char alpha, char currentSymbol);
+bool parser(GramaticLL1 gramatic, char chain[]);
+/*
+*   esta funcion va a tomar a grsamatica ll1 y va ir verificando la cadena desde el simbolo corriente pag 104 del apunte
+*/
+bool parserNoTerminal(GramaticLL1Production *gramaticProductions, char currentSymbol, char alpha);
+/*
+* esta funcion va a decdir si el  simbolo es terminal o no terminal para luego ver como lo procesa pag 104 del apunte 
+*/
 bool procesar(char alphabetSymbol, char currentSymbol, GramaticLL1Production *gramaticProductions);
+/*
+* decide si pertenece o no a la cadena pag 104 del apunte
+*/
 bool eat(char alpha, char currentSymbol);
+
 
 #endif

@@ -26,6 +26,13 @@ bool pertenceAlph(int alph[], char *chain){
 	return a;
 }
 
+bool symbolBelongsToAlphabet(Alphabet alphabet, int symbol){	
+	for(int i = 0; i < alphabet.cant; i++){
+		if(alphabet.alphabet[i] == symbol) return true;
+	}
+	return false;
+}
+
 void addNewSymbolToAlphabet(Alphabet *alphabet, int symbol){
 	if(symbol == 33) symbol = 0;//is lambda
 	bool isNewSymbol = true;
@@ -52,4 +59,19 @@ void initAlphabet(Alphabet *alphabet){
 		alphabet->alphabet[i] = -1;
 	}
 	alphabet->cant = 0;
+}
+
+int parseCharToInt(char symbol){
+	return (int) symbol;
+}
+
+char parseIntToChar(int symbol){
+	return (char)symbol;
+}
+
+void printAlphabetChar(Alphabet alphabet){
+	printf("Alphabet = ");
+	for(int i=0; i<alphabet.cant; i++){
+		printf("%d - ", alphabet.alphabet[i]);
+	}
 }
