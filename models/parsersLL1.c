@@ -2,28 +2,22 @@
 // #include "../utils/productions.h"
 #include <string.h>
 #include <stdbool.h>
+#include "parsersLL1.h"
 
 char chain[100];
 int i;
-bool parser();
-bool S();
-bool E();
-bool G();
-bool T();
-bool N();
-bool F();
-bool U();
-bool P();
-bool L();
+
 
 int main(){
     printf("entro el paeseo\n");
-    printf("result %d \n", parser());
+    printf("result True == %s \n", parser("(a)#") ? "True" : "False");
+    printf("result False == %s \n", parser("(a)") ? "True" : "False" );
+    printf("result False == %s \n", parser(")a(#") ? "True" : "False" );
 }
 
-bool parser(){
+bool parser(char c[]){
     i = 0;
-    strcpy(chain, "(a)#");
+    strcpy(chain, c);
     printf("empezo parseo\n");
     return S();
 
@@ -37,21 +31,18 @@ bool S() {
             if (chain[i] == '#'){ // Call non-terminal E'
                 i++;
                 return true;
-            }else{
-                return false;
             }
-        }else{
-            return false;
         }
     }
+    return false;
 }
 
 // Grammar rule: E -> TG G = E'
 bool E() {
     printf("Parseando E() cc = %c\n", chain[i]);
     if(chain[i] == '(' || chain[i] == 'a' || chain[i] == 'b' || chain[i] == 'c'){
-        if (T()) { // Call non-terminal T
-            if (G()) // Call non-terminal E'
+        if (T()) {
+            if (G())
                 return true;
         }
     }
@@ -63,11 +54,13 @@ bool G() {
     printf("Parseando G() cc = %c\n", chain[i]);
     if(chain[i] == '|'){
         i++;
-        if (T()){ // Call non-terminal T
+        if (T()){
             if (G())
                 return true;
         }
         return false;
+    }else{
+        return true;
     }
 }
 
@@ -88,12 +81,14 @@ bool N() {
     printf("Parseando N() cc = %c\n", chain[i]);
     if(chain[i] == '.'){
         i++;
-        if (F()) { // Call non-terminal T
+        if (F()){ // Call non-terminal T
             if(N()) // Call non-terminal E'
                 return true;
         }
+        return false; 
+    }else{
+        return true;
     }
-    return false; 
 }
 
 // Grammar rule: F -> PU U = F'
@@ -114,11 +109,13 @@ bool U() {
     if(chain[i] == '*'){
         i++;
         return true;
+    }else{
+        return true;
     }
     return false;
 }
 
-// Grammar rule: P -> (E)
+// Grammar rule: P -> (E) P -> L
 bool P() {
     printf("Parseando P() cc = %c\n", chain[i]);
     if(chain[i] == '('){
@@ -129,6 +126,10 @@ bool P() {
                 return true;
             }
         }
+        return false;
+    }else{
+        if(L())
+            return true; 
     }
     return false;
 }
