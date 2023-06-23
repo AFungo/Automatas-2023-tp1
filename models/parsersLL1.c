@@ -10,12 +10,12 @@ char chain[100];
 int i;
 
 
-int main(){
-    printf("entro el paeseo\n");
-    printf("result True == %s \n", parser("(a)#") ? "True" : "False");
-    printf("result False == %s \n", parser("(a)") ? "True" : "False" );
-    printf("result False == %s \n", parser(")a(#") ? "True" : "False" );
-}
+// int main(){
+//     printf("entro el paeseo\n");
+//     printf("result True == %s \n", parser("(a)#") ? "True" : "False");
+//     printf("result False == %s \n", parser("(a)") ? "True" : "False" );
+//     printf("result False == %s \n", parser(")a(#") ? "True" : "False" );
+// }
 
 bool parser(char c[]){
     i = 0;
@@ -154,10 +154,9 @@ bool L() {
     return false;
 }
 
-AFN toAFN() {
+AFN *gramatictoAFN() {
     AFN *afn = malloc(sizeof(AFN));
     initAutomaton(afn);
-
     addInitialStateToAutomaton(afn, (int)'S');
 
     addStateToAutomaton(afn,(int)'E');
@@ -173,11 +172,13 @@ AFN toAFN() {
     addSymbolToAutomaton(afn,(int)'|');
     addSymbolToAutomaton(afn,(int)'.');
     addSymbolToAutomaton(afn,(int)'*');
-    addSymbolToAutomaton(afn,(int)'()');
+    addSymbolToAutomaton(afn,(int)'(');
     addSymbolToAutomaton(afn,(int)')');
     addSymbolToAutomaton(afn,(int)'a');
     addSymbolToAutomaton(afn,(int)'b');
     addSymbolToAutomaton(afn,(int)'c');
+    addSymbolToAutomaton(afn,(int)'!');
+
 
     addNewFinalStateToAutomaton(afn,(int)'H');
     
@@ -196,6 +197,8 @@ AFN toAFN() {
     addNewDeltaToAutomaton(afn,(int)'L',(int)'H',(int)'a');
     addNewDeltaToAutomaton(afn,(int)'L',(int)'H',(int)'b');
     addNewDeltaToAutomaton(afn,(int)'L',(int)'H',(int)'c');
+
+    return afn;
 
 }
 

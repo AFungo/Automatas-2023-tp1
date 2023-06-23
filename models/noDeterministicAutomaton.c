@@ -77,6 +77,7 @@ void getMultipleTransitions(AFN *automaton, char *trans, Alphabet *transitions){
 }
 
 void addSymbolToAutomaton(AFN *automaton, int symbol){
+	printf("symbol added %d %c alphabet_cant = %d\n", symbol, (int)symbol, automaton->alphabet.cant);
 	addNewSymbolToAlphabet(&automaton->alphabet, symbol);
 }
 

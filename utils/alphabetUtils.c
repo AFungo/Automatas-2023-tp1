@@ -70,7 +70,7 @@ char parseIntToChar(int symbol){
 }
 
 void printAlphabetChar(Alphabet alphabet){
-	printf("Alphabet = ");
+	printf("Alphabet -- cant = %d \n", alphabet.cant);
 	for(int i=0; i<alphabet.cant; i++){
 		printf("%d - ", alphabet.alphabet[i]);
 	}

@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#define MAX_STATES 10
+#define MAX_STATES 20
 
 typedef struct{
 	int states[MAX_STATES];

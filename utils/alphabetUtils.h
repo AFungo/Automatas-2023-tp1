@@ -1,6 +1,6 @@
 #ifndef ALPHABETUTILS_h
 #define ALPHABETUTILS_h
-#define ALPHABET_SIZE 5
+#define ALPHABET_SIZE 50
 
 typedef struct{
 	int alphabet[ALPHABET_SIZE]; //lambda == 0

@@ -16,7 +16,7 @@ typedef struct{
     Alphabet alphabet;
 
 }GramaticLL1;
-
+AFN *gramatictoAFN();
 bool parser(char c[]);
 bool S();
 bool E();
