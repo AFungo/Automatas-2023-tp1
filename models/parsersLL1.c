@@ -2,6 +2,8 @@
 // #include "../utils/productions.h"
 #include <string.h>
 #include <stdbool.h>
+#include "noDeterministicAutomaton.h"
+
 
 char chain[100];
 int i;
@@ -149,6 +151,51 @@ bool L() {
         return true;
     }
     return false;
+}
+
+AFN toAFN() {
+    AFN *afn = malloc(sizeof(AFN));
+    initAutomaton(afn);
+
+    addInitialStateToAutomaton(afn, (int)'S');
+
+    addStateToAutomaton(afn,(int)'E');
+    addStateToAutomaton(afn,(int)'G');
+    addStateToAutomaton(afn,(int)'T');
+    addStateToAutomaton(afn,(int)'N');
+    addStateToAutomaton(afn,(int)'F');
+    addStateToAutomaton(afn,(int)'U');
+    addStateToAutomaton(afn,(int)'P');
+    addStateToAutomaton(afn,(int)'L');
+    addStateToAutomaton(afn,(int)'H'); //new state used as final state
+
+    addSymbolToAutomaton(afn,(int)'|');
+    addSymbolToAutomaton(afn,(int)'.');
+    addSymbolToAutomaton(afn,(int)'*');
+    addSymbolToAutomaton(afn,(int)'()');
+    addSymbolToAutomaton(afn,(int)')');
+    addSymbolToAutomaton(afn,(int)'a');
+    addSymbolToAutomaton(afn,(int)'b');
+    addSymbolToAutomaton(afn,(int)'c');
+
+    addNewFinalStateToAutomaton(afn,(int)'H');
+    
+    addNewDeltaToAutomaton(afn,(int)'S', (int)'E', 0);  //  S -> E#.  0 supungo que es lambda
+    addNewDeltaToAutomaton(afn,(int)'E', (int)'T', 0);
+    addNewDeltaToAutomaton(afn,(int)'T', (int)'G', 0);
+    addNewDeltaToAutomaton(afn,(int)'G', (int)'H', 0);
+    addNewDeltaToAutomaton(afn,(int)'G', (int)'T', 0);
+    addNewDeltaToAutomaton(afn,(int)'T', (int)'F', 0);
+    addNewDeltaToAutomaton(afn,(int)'F', (int)'N', 0);
+    addNewDeltaToAutomaton(afn,(int)'N', (int)'F',(int)'.');
+    addNewDeltaToAutomaton(afn,(int)'F', (int)'P', 0);
+    addNewDeltaToAutomaton(afn,(int)'P', (int)'U', 0);
+    addNewDeltaToAutomaton(afn,(int)'U', (int)'U',(int)'*');
+    addNewDeltaToAutomaton(afn,(int)'P',(int)'E',(int)'(');
+    addNewDeltaToAutomaton(afn,(int)'L',(int)'H',(int)'a');
+    addNewDeltaToAutomaton(afn,(int)'L',(int)'H',(int)'b');
+    addNewDeltaToAutomaton(afn,(int)'L',(int)'H',(int)'c');
+
 }
 
 
