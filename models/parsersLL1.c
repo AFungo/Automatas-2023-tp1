@@ -2,20 +2,12 @@
 // #include "../utils/productions.h"
 #include <string.h>
 #include <stdbool.h>
-#include "noDeterministicAutomaton.h"
+
 
 #include "parsersLL1.h"
 
 char chain[100];
 int i;
-
-
-// int main(){
-//     printf("entro el paeseo\n");
-//     printf("result True == %s \n", parser("(a)#") ? "True" : "False");
-//     printf("result False == %s \n", parser("(a)") ? "True" : "False" );
-//     printf("result False == %s \n", parser(")a(#") ? "True" : "False" );
-// }
 
 bool parser(char c[]){
     i = 0;
@@ -197,6 +189,7 @@ AFN *gramatictoAFN() {
     addNewDeltaToAutomaton(afn,(int)'L',(int)'H',(int)'a');
     addNewDeltaToAutomaton(afn,(int)'L',(int)'H',(int)'b');
     addNewDeltaToAutomaton(afn,(int)'L',(int)'H',(int)'c');
+    addNewDeltaToAutomaton(afn,(int)'S', (int)'L', 0);
 
     return afn;
 
@@ -213,45 +206,3 @@ AFN *gramatictoAFN() {
 
 
 
-// bool parserNoTerminal(GramaticLL1Production *gramaticProductions, char currentSymbol, char alpha){
-//     return false;
-// }
-    
-//     GramaticLL1Production *alphaProductions = malloc(sizeof(GramaticLL1Production));
-//     Production *production = malloc(sizeof(Production));
-    
-//     getAlphaProductions(gramaticProductions ,alpha, alphaProductions);
-//     findProduction(*alphaProductions, chain[i], production);
-//     if(!isEmptyProduction(*production)){//si es una produchain[i]ion retorna falso, significa q no hay produchain[i]ion q en sus simbolos directrices tenga el simbolo corriente
-//         Alphabet alphabet = getProductionBeta(*production);
-//         for(int i = 0; i < alphabet.cant; i++){
-//             char alphabetSymbol = alphabet.alphabet[i];
-//             printf("caracter de la cadena %c - simbolo procesado %c\n", chain[i], alphabetSymbol);
-//             if(!procesar(alphabetSymbol, currentSymbol, gramaticProductions)){
-//                 free(production);
-//                 free(alphaProductions);
-//                 return false;
-//             }
-//         }
-//     }else{
-//         return false;
-//     }
-//     free(production);
-//     free(alphaProductions);
-//     return true;
-// }
-
-// bool procesar(char alpha, char currentSymbol, GramaticLL1Production *gramaticProductions){
-//     if(isNoTerminalSymbol(alpha)){
-//         return parserNoTerminal(gramaticProductions, currentSymbol, alpha);
-//     }else{
-//         return eat(alpha, currentSymbol);
-//     }
-// }
-
-// bool eat(char alpha, char currentSymbol){
-//     if(alpha == chain[i]){
-//         return i++;
-//     }
-//     return false;
-// }

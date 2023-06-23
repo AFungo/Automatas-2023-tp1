@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-
+#include "noDeterministicAutomaton.h"
 #include "../utils/alphabetUtils.h"
 #include "../utils/productions.h"
 
