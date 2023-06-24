@@ -10,3 +10,7 @@ TP 2:
 	./run_operations_test.sh
 	correr algoritmo de minimizacion
 	./run_minimization_test.sh
+
+TP 3:
+	correr los test
+	./run_tp3.sh
