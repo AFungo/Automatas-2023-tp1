@@ -24,7 +24,7 @@ void automatonToString(AFN automaton){
  	for(int i = 0; i<automaton.alphabet.cant;i++){
      	int symbol = automaton.alphabet.alphabet[i];
      	if(automaton.alphabet.alphabet[i] == 0) printf("!");	
-		else	printf("%d, ", symbol);
+		else	printf("%c, ", (char)symbol);
 	}
 	printf("\nTransitions = \n");
 	for(int i = 0; i<automaton.alphabet.cant;i++){          
@@ -35,7 +35,7 @@ void automatonToString(AFN automaton){
 				int symbol = automaton.alphabet.alphabet[i];
 				if(automaton.delta[j][i][k] == true){ 
 					if(symbol == 0) printf("q%d -> q%d - label: !\n", departure, arrival);
-					else printf("q%d -> q%d - label: %d\n", departure, arrival, symbol);
+					else printf("q%d -> q%d - label: %c\n", departure, arrival, (char)symbol);
 				}
 			}
 		}
@@ -77,7 +77,6 @@ void getMultipleTransitions(AFN *automaton, char *trans, Alphabet *transitions){
 }
 
 void addSymbolToAutomaton(AFN *automaton, int symbol){
-	printf("symbol added %d %c alphabet_cant = %d\n", symbol, (int)symbol, automaton->alphabet.cant);
 	addNewSymbolToAlphabet(&automaton->alphabet, symbol);
 }
 
@@ -161,4 +160,15 @@ States getAFNFinalStates(AFN automaton){
 		addStateToStates(finalStates, automaton.finalStates.states[i]);
 	}
 	return *finalStates;
+}
+
+AFN *createAutomaton(int symbol){
+	AFN *afn = malloc(sizeof(AFN));
+	addSymbolToAutomaton(afn, symbol);
+	addStateToAutomaton(afn, 0);
+	addStateToAutomaton(afn, 1);
+	addInitialStateToAutomaton(afn, 0);
+	addNewDeltaToAutomaton(afn, 0, 1, symbol);
+	addNewFinalStateToAutomaton(afn, 1);
+	return afn;
 }

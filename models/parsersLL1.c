@@ -9,21 +9,25 @@
 char chain[100];
 int i;
 
-bool parser(char c[]){
+
+AFN *getAFNFromRegExp(char c[], AFN **afn){
+    parser(c, afn);
+    return *afn;
+}
+
+bool parser(char c[], AFN **afn){
     i = 0;
     strcpy(chain, c);
-    printf("empezo parseo\n");
-    return S();
+    return S(afn);
 
 }
 
 // Grammar rule: S -> E#
-bool S() {
+bool S(AFN **afn) {
     printf("Parseando S() cc = %c\n", chain[i]);
     if(chain[i] == '(' || chain[i] == 'a' || chain[i] == 'b' || chain[i] == 'c'){
-        if (E()) { // Call non-terminal T
-            if (chain[i] == '#'){ // Call non-terminal E'
-                i++;
+        if (E(afn)) {
+            if (chain[i] == '#'){
                 return true;
             }
         }
@@ -32,11 +36,11 @@ bool S() {
 }
 
 // Grammar rule: E -> TG G = E'
-bool E() {
+bool E(AFN **afn) {
     printf("Parseando E() cc = %c\n", chain[i]);
     if(chain[i] == '(' || chain[i] == 'a' || chain[i] == 'b' || chain[i] == 'c'){
-        if (T()) {
-            if (G())
+        if (T(afn)) {
+            if (G(afn))            
                 return true;
         }
     }
@@ -44,13 +48,17 @@ bool E() {
 }
 
 // Grammar rule: G -> |TG G = E'
-bool G() {
+bool G(AFN **afn) {
     printf("Parseando G() cc = %c\n", chain[i]);
     if(chain[i] == '|'){
+        AFN *a;
         i++;
-        if (T()){
-            if (G())
+        if (T(&a)){
+            if (G(&a)){
+                *afn = automatonUnion(**afn, *a);
+                free(a);
                 return true;
+            }
         }
         return false;
     }else{
@@ -59,11 +67,11 @@ bool G() {
 }
 
 // Grammar rule: T -> FN N = T'
-bool T() {
+bool T(AFN **afn) {
     printf("Parseando T() cc = %c\n", chain[i]);
     if(chain[i] == '(' || chain[i] == 'a' || chain[i] == 'b' || chain[i] == 'c'){
-        if (F()) { // Call non-terminal T
-            if (N()) // Call non-terminal E'
+        if (F(afn)) { // Call non-terminal T
+            if (N(afn)) // Call non-terminal E'
                 return true;
         }
     }
@@ -71,13 +79,17 @@ bool T() {
 }
 
 // Grammar rule: N -> .FN N = T'
-bool N() {
+bool N(AFN **afn) {
     printf("Parseando N() cc = %c\n", chain[i]);
     if(chain[i] == '.'){
+        AFN *a;
         i++;
-        if (F()){ // Call non-terminal T
-            if(N()) // Call non-terminal E'
+        if (F(&a)){ // Call non-terminal T
+            if(N(&a)){ // Call non-terminal E'
+                *afn = automatonConcatenacion(**afn, *a);
+                free(a);
                 return true;
+            }
         }
         return false; 
     }else{
@@ -86,11 +98,11 @@ bool N() {
 }
 
 // Grammar rule: F -> PU U = F'
-bool F() {
+bool F(AFN **afn) {
     printf("Parseando F() cc = %c\n", chain[i]);
     if(chain[i] == '(' || chain[i] == 'a' || chain[i] == 'b' || chain[i] == 'c'){
-        if (P()) { // Call non-terminal T
-            if (U()) // Call non-terminal E'
+        if (P(afn)) { // Call non-terminal T
+            if (U(afn)) // Call non-terminal E'
                 return true;
         }
     }
@@ -98,9 +110,9 @@ bool F() {
 }
 
 // Grammar rule: U -> * U = F'
-bool U() {
-    printf("Parseando U() cc = %c\n", chain[i]);
+bool U(AFN **afn) {
     if(chain[i] == '*'){
+        *afn = automatonKlenneClausure(**afn);
         i++;
         return true;
     }else{
@@ -110,19 +122,19 @@ bool U() {
 }
 
 // Grammar rule: P -> (E) P -> L
-bool P() {
+bool P(AFN **afn) {
     printf("Parseando P() cc = %c\n", chain[i]);
     if(chain[i] == '('){
         i++;
-        if (E()) { // Call non-terminal T
-            if (chain[i] == ')'){ // Call non-terminal E'
+        if (E(afn)) {
+            if (chain[i] == ')'){
                 i++;
                 return true;
             }
         }
         return false;
     }else{
-        if(L())
+        if(L(afn))
             return true; 
     }
     return false;
@@ -131,72 +143,46 @@ bool P() {
 // Grammar rule: L -> a
 // Grammar rule: L -> b
 // Grammar rule: L -> c
-bool L() {
+bool L(AFN **afn) {
     printf("Parseando L() cc = %c\n", chain[i]);
     if(chain[i] == 'a'){
+        *afn = createAutomaton((int) 'a');
         i++;
         return true;
     }else if(chain[i] == 'b'){
+        *afn = createAutomaton((int)'b');
         i++;
         return true;
     }else if(chain[i] == 'c'){
+        *afn = createAutomaton((int) 'c');
         i++;
         return true;
     }
     return false;
 }
 
-AFN *gramatictoAFN() {
+bool minigrep(char chain[], char regExpre[]){
     AFN *afn = malloc(sizeof(AFN));
-    initAutomaton(afn);
-    addInitialStateToAutomaton(afn, (int)'S');
+    getAFNFromRegExp(regExpre, &afn);
+    automatonToString(*afn);
+    AFD afd = aFNtoAFD(afn);
+    printf("no me la banque\n");
+    *afn = AFDtoAFN(afd);
 
-    addStateToAutomaton(afn,(int)'E');
-    addStateToAutomaton(afn,(int)'G');
-    addStateToAutomaton(afn,(int)'T');
-    addStateToAutomaton(afn,(int)'N');
-    addStateToAutomaton(afn,(int)'F');
-    addStateToAutomaton(afn,(int)'U');
-    addStateToAutomaton(afn,(int)'P');
-    addStateToAutomaton(afn,(int)'L');
-    addStateToAutomaton(afn,(int)'H'); //new state used as final state
+    int length = strlen(chain);
 
-    addSymbolToAutomaton(afn,(int)'|');
-    addSymbolToAutomaton(afn,(int)'.');
-    addSymbolToAutomaton(afn,(int)'*');
-    addSymbolToAutomaton(afn,(int)'(');
-    addSymbolToAutomaton(afn,(int)')');
-    addSymbolToAutomaton(afn,(int)'a');
-    addSymbolToAutomaton(afn,(int)'b');
-    addSymbolToAutomaton(afn,(int)'c');
-    addSymbolToAutomaton(afn,(int)'!');
-
-
-    addNewFinalStateToAutomaton(afn,(int)'H');
-    
-    addNewDeltaToAutomaton(afn,(int)'S', (int)'E', 0);  //  S -> E#.  0 supungo que es lambda
-    addNewDeltaToAutomaton(afn,(int)'E', (int)'T', 0);
-    addNewDeltaToAutomaton(afn,(int)'T', (int)'G', 0);
-    addNewDeltaToAutomaton(afn,(int)'G', (int)'H', 0);
-    addNewDeltaToAutomaton(afn,(int)'G', (int)'T', 0);
-    addNewDeltaToAutomaton(afn,(int)'T', (int)'F', 0);
-    addNewDeltaToAutomaton(afn,(int)'F', (int)'N', 0);
-    addNewDeltaToAutomaton(afn,(int)'N', (int)'F',(int)'.');
-    addNewDeltaToAutomaton(afn,(int)'F', (int)'P', 0);
-    addNewDeltaToAutomaton(afn,(int)'P', (int)'U', 0);
-    addNewDeltaToAutomaton(afn,(int)'U', (int)'U',(int)'*');
-    addNewDeltaToAutomaton(afn,(int)'P',(int)'E',(int)'(');
-    addNewDeltaToAutomaton(afn,(int)'L',(int)'H',(int)'a');
-    addNewDeltaToAutomaton(afn,(int)'L',(int)'H',(int)'b');
-    addNewDeltaToAutomaton(afn,(int)'L',(int)'H',(int)'c');
-    addNewDeltaToAutomaton(afn,(int)'S', (int)'L', 0);
-
-    return afn;
-
+    for (int start = 0; start < length; start++) {
+        for (int len = 1; len <= length - start; len++) {
+            for (int i = start; i < start + len; i++) {
+                char* subchain = malloc((len + 1) * sizeof(char));
+                strncpy(subchain, chain + start, len);
+                subchain[len] = '\0';
+                printf("%s pertence %s\n", subchain, pertence(afn, chain) ? "True":"False");
+                free(subchain);
+            }
+        }
+    }
 }
-
-
-
 
 
 

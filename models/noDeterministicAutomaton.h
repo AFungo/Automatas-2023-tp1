@@ -30,4 +30,5 @@ void appendStatesToAFN(AFN *automaton, AFN b, int statesIndex[MAX_STATES], int *
 void appendDeltaToAFN(AFN *automaton, AFN b, int statesIndex[MAX_STATES]);
 void appendFinalStatesToAFN(AFN *automaton, AFN b, int statesIndex[MAX_STATES]);
 States getAFNFinalStates(AFN automaton);
+AFN *createAutomaton(int symbol);
 #endif

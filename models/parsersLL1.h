@@ -8,7 +8,7 @@
 #include "noDeterministicAutomaton.h"
 #include "../utils/alphabetUtils.h"
 #include "../utils/productions.h"
-
+#include "../models/automatonAlgorithms.h"
 
 typedef struct{
 
@@ -16,16 +16,17 @@ typedef struct{
     Alphabet alphabet;
 
 }GramaticLL1;
-AFN *gramatictoAFN();
-bool parser(char c[]);
-bool S();
-bool E();
-bool G();
-bool T();
-bool N();
-bool F();
-bool U();
-bool P();
-bool L();
+bool minigrep(char chain[], char regExpre[]);
+AFN *getAFNFromRegExp(char c[], AFN **afn);
+bool parser(char c[], AFN **afn);
+bool S(AFN **afn);
+bool E(AFN **afn);
+bool G(AFN **afn);
+bool T(AFN **afn);
+bool N(AFN **afn);
+bool F(AFN **afn);
+bool U(AFN **afn);
+bool P(AFN **afn);
+bool L(AFN **afn);
 
 #endif

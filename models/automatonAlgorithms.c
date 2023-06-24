@@ -21,7 +21,7 @@ bool pertence(AFN *automaton, char *chain){
 		k=0;
 		while (k<cantStates){
 			int actualStateIndex = getStateIndex(automaton->states, actualState);
-			int symbolIndex = getAlphabetIndex(automaton->alphabet, (int)chain[i]-48);
+			int symbolIndex = getAlphabetIndex(automaton->alphabet, (int)chain[i]);
 			if ((automaton->delta[actualStateIndex][symbolIndex][k])){
 				actualState = automaton->states.states[k];
 				k=cantStates;
@@ -70,6 +70,7 @@ AFN AFDtoAFN(AFD afd){
 
 
 AFD aFNtoAFD(AFN *afn){
+	printf("ERFDSFDA\n");
 	AFD *afd = malloc(sizeof(AFN));
 	initAFD(afd);
 	for(int k = 0; k < afn->alphabet.cant; k++){
@@ -243,7 +244,6 @@ AFN *automatonUnion(AFN a, AFN b){
 	//add transition by lambda between initial states of the new automaton and initial state of b
 	int bInitialStateIndex = getStateIndex(b.states, b.initialState);
 	addNewDeltaToAutomaton(automaton, 0, automatonBStatesIndex[bInitialStateIndex], 0);
-
 	return automaton;
 }
 
