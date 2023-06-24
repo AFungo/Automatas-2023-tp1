@@ -70,7 +70,6 @@ AFN AFDtoAFN(AFD afd){
 
 
 AFD aFNtoAFD(AFN *afn){
-	printf("ERFDSFDA\n");
 	AFD *afd = malloc(sizeof(AFN));
 	initAFD(afd);
 	for(int k = 0; k < afn->alphabet.cant; k++){

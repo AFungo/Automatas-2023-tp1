@@ -164,10 +164,8 @@ bool L(AFN **afn) {
 bool minigrep(char chain[], char regExpre[]){
     AFN *afn = malloc(sizeof(AFN));
     getAFNFromRegExp(regExpre, &afn);
-    automatonToString(*afn);
-    AFD afd = aFNtoAFD(afn);
-    printf("no me la banque\n");
-    *afn = AFDtoAFN(afd);
+    // AFD afd = aFNtoAFD(afn);
+    // *afn = AFDtoAFN(afd);
 
     int length = strlen(chain);
 
